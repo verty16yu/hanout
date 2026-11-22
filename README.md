@@ -28,6 +28,12 @@ Une mission dure 5 à 10 minutes et se joue toujours en quatre temps :
 3. **Le résultat** : le quartier réagit, les chiffres apparaissent.
 4. **La fin de mission avec Ammi Rabah**, l’ancien épicier. En version éducative : la notion est nommée, une question invite à réfléchir, puis deux questions de cours font gagner un badge. En version grand public : un conseil sans jargon et 1 à 3 étoiles.
 
+## Mon hanout
+
+Entre deux missions, ta boutique tourne toute seule, comme dans un jeu incrémental : tu sers des clients d’un geste, tu encaisses, puis tu achètes des améliorations (une étagère, le cousin au comptoir, un frigo à boissons, le pain du boulanger, un vélo de livraison). Chaque mission réussie ajoute 25 % à tous les gains, et la boutique continue à moitié régime pendant ton absence (8 heures au plus).
+
+En version éducative, chaque amélioration montre la notion qu’elle illustre : recette marginale, rendements marginaux décroissants, investissement et délai de récupération, spécialisation et échange, taille du marché.
+
 ## Les missions du prototype
 
 | Mission | Cours | Ce que tu apprends |
@@ -86,6 +92,6 @@ Projet conçu par **Mohamed Yanis Kireche**, étudiant en L1 SEGC (sciences éco
 
 ## In English
 
-**Hanout** is an educational business game: you run a *hanout*, a neighbourhood corner shop, and learn economics by making real shopkeeper decisions. Choose between an **economics student** version (missions mapped to first-year courses in Statistics, Microeconomics and Introduction to Economics, with quizzes and badges) and an **everyone** version (the same situations as shop challenges, with stars). Available in French and English, on phone and desktop.
+**Hanout** is an educational business game: you run a *hanout*, a neighbourhood corner shop, and learn economics by making real shopkeeper decisions. Choose between an **economics student** version (missions mapped to first-year courses in Statistics, Microeconomics and Introduction to Economics, with quizzes and badges) and an **everyone** version (the same situations as shop challenges, with stars). Between missions, **My hanout** keeps your shop running like an idle game: serve customers, buy upgrades, and every mission you complete boosts your income. Available in French and English, on phone and desktop.
 
 ▶ **Play:** https://verty16yu.github.io/hanout/

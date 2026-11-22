@@ -66,6 +66,7 @@ h1:focus, h2:focus { outline: none; }
 .compteur { display: inline-flex; align-items: center; gap: 4px; background: #fff6de; border-radius: 999px; padding: 6px 10px; font-weight: 800; color: var(--ocre-fonce); white-space: nowrap; }
 
 /* Carnet */
+.defi svg { flex-shrink: 0; }
 .defi { display: flex; align-items: center; gap: 12px; margin: 12px 16px 0; padding: 12px 14px; border-radius: 16px; background: var(--bleu); color: #fff; }
 .defi p { margin: 0; display: flex; flex-direction: column; }
 .defi .petit { color: #e6f0f8; }
@@ -262,6 +263,59 @@ h1:focus, h2:focus { outline: none; }
   .histo { --hmax: 240px; gap: 6px; }
   .barre-h .n, .barre-h .h { font-size: 12px; }
   .gros-chiffre { font-size: 56px; }
+}
+
+/* Mon hanout : la boutique qui tourne entre les missions */
+.sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.carte-hanout { display: flex; align-items: center; gap: 12px; margin: 12px 16px 0; padding: 12px 14px; border-radius: 16px; background: var(--ocre-clair); border: 2px solid var(--ocre); color: var(--nuit); text-decoration: none; }
+.carte-hanout .texte { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.carte-hanout b { font-family: var(--titre); font-size: 18px; color: var(--ocre-fonce); }
+.bouton-mini { padding: 8px 14px; border-radius: 12px; background: var(--ocre); color: #fff; font-weight: 800; white-space: nowrap; }
+.hanout-corps { display: flex; flex-direction: column; gap: 14px; padding: 12px 16px 32px; }
+.hanout-boutique { display: flex; flex-direction: column; gap: 12px; }
+.hanout-boutique > .bulle-ammi { margin: 0; }
+.message-absence { margin: 0; padding: 10px 14px; border-radius: 14px; background: #e6f3ec; color: #1f5e43; font-weight: 700; }
+.message-absence .petit { display: block; font-weight: 400; color: #1f5e43; }
+.zone-clic { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.devanture-bouton { width: 100%; max-width: 420px; padding: 6px; border: none; border-radius: 24px; background: #dcebf6; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.devanture-bouton:focus-visible { outline: 3px solid var(--bleu); outline-offset: 3px; }
+.devanture-bouton:active .devanture, .devanture-bouton.servi .devanture { animation: tape .18s ease-out; }
+.devanture { display: block; width: 100%; height: auto; }
+.devanture .cousin { animation: flotte 1.6s ease-in-out infinite alternate; }
+.devanture .velo { animation: flotte 2.2s ease-in-out infinite alternate; }
+.aide-servir { text-align: center; }
+.gain-flottant { position: absolute; transform: translateX(-50%); pointer-events: none; font-family: var(--titre); font-weight: 700; font-size: 20px; color: var(--menthe); text-shadow: 0 1px 0 #fff; animation: monte .9s ease-out forwards; }
+@keyframes monte { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -60px); } }
+@keyframes tape { 0% { transform: scale(1); } 40% { transform: scale(.96); } 100% { transform: scale(1); } }
+.chiffres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.chiffre.principal { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.chiffre { padding: 10px 12px; border-radius: 14px; background: #fff; border: 1px solid var(--trait); }
+.chiffre dt { font-size: 12px; color: var(--gris); }
+.chiffre dd { margin: 2px 0 0; font-weight: 800; font-size: 15px; color: var(--nuit); font-variant-numeric: tabular-nums; }
+.chiffre.principal dd { font-family: var(--titre); font-size: 22px; color: var(--ocre-fonce); }
+.clients-servis { margin: -4px 0 0; text-align: center; }
+.bonus { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 14px; border-radius: 14px; background: #fff6de; color: var(--ocre-fonce); font-size: 14px; }
+.bonus.actif { background: var(--menthe); color: #fff; }
+.bonus svg { flex-shrink: 0; }
+.hanout-ameliorations h2 { margin: 6px 0 8px; font-family: var(--titre); font-size: 20px; }
+.liste-amelios { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.amelio { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px 12px; align-items: start; padding: 12px; border-radius: 16px; background: #fff; border: 1px solid var(--trait); }
+.amelio-texte { display: flex; flex-direction: column; gap: 3px; }
+.amelio-nom b { font-size: 15.5px; }
+.niveau { display: inline-block; margin-left: 4px; padding: 1px 8px; border-radius: 999px; background: var(--bleu-clair); color: var(--bleu-fonce, #155582); font-size: 12px; font-weight: 700; }
+.effet { font-weight: 700; color: var(--menthe); font-size: 14px; }
+.notion-puce { align-self: start; margin-top: 2px; padding: 2px 8px; border-radius: 8px; background: var(--bleu-clair); color: var(--bleu); font-size: 12px; font-weight: 800; }
+.recup { font-weight: 700; color: var(--ocre-fonce); }
+.amelio .acheter { grid-column: 1 / -1; min-height: 44px; font-size: 15px; }
+.amelio .acheter:not(:disabled) { background: var(--ocre); border-color: var(--ocre); color: #fff; }
+.amelio.mystere { background: transparent; border-style: dashed; }
+@media (min-width: 900px) {
+  .hanout-corps { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; padding: 24px 28px 40px; align-items: start; }
+  .hanout-boutique { position: sticky; top: 96px; }
+  .carte-hanout { margin: 20px 0 0; }
+  .amelio { grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; }
+  .amelio .acheter { grid-column: auto; min-width: 150px; }
+  .hanout-ameliorations h2 { margin-top: 0; }
 }
 
 /* Bandeau de consentement et page Confidentialité */

@@ -23,7 +23,7 @@ La mesure est **anonyme** et **désactivée par défaut** : rien n'est chargé n
 
 | Événement | Propriétés | Question à laquelle il répond |
 | --- | --- | --- |
-| `ecran_vu` | `ecran` | Quels écrans sont ouverts, où les joueurs s'arrêtent |
+| `ecran_vu` | `ecran` (`accueil`, `carnet`, `hanout`) | Quels écrans sont ouverts, où les joueurs s'arrêtent |
 | `mission_commencee` | `mission` | Quelles missions attirent |
 | `mission_terminee` | `mission`, `duree_s`, `etoiles` | Taux de réussite, temps passé par mission |
 | `mission_rejouee` | `mission`, `etoiles` | Les joueurs ont-ils envie de rejouer ? |
@@ -34,12 +34,16 @@ La mesure est **anonyme** et **désactivée par défaut** : rien n'est chargé n
 | `micro4_bilan` | `surplus_producteur`, `surplus_consommateur`, `part_du_max`, `departs` | Le partage du surplus en fin de journée |
 | `stats3_classe` | `heure`, `juste` | Savent-ils repérer la classe modale ? |
 | `stats3_horaire` | `horaire`, `essai`, `servis`, `juste` | Savent-ils lire un histogramme pour décider ? |
+| `hanout_achat` | `amelioration`, `niveau`, `caisse_totale`, `missions_reussies` | Mon hanout : quelles améliorations sont achetées, et à quel moment de la progression |
+| `hanout_quitte` | `duree_s`, `clients`, `achats`, `revenu_par_s`, `gain_absence` | Temps passé dans Mon hanout, et s'il donne envie de revenir |
 | `reglage_change` | `reglage`, `valeur` | Changements de langue, de version, de ville |
 | `consentement_accepte`, `consentement_retire` | — | Suivi des accords |
 
 PostHog ajoute aussi les clics (autocapture) et, si activés dans le projet, des enregistrements anonymes de parties avec les champs de saisie masqués.
 
-## Tableaux de bord prévus
+## Tableaux de bord
+
+Créés dans PostHog le 23 novembre 2026 (projet 363681, région UE) : *Entonnoir des missions*, *Notions difficiles*, *Marchandage*, *Fidélité*, *Profil du public*. Leur intention :
 
 1. **Entonnoir** : accueil → carnet → mission commencée → mission terminée, par version et par langue.
 2. **Notions difficiles** : taux de bonnes réponses au premier essai pour chaque question de quiz.

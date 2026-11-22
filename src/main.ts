@@ -5,6 +5,7 @@ import { ecranAccueil } from './ecrans/accueil';
 import { ecranCarnet } from './ecrans/carnet';
 import { demarrerMesure, suivre } from './analyse';
 import { ecranConfidentialite } from './ecrans/confidentialite';
+import { ecranHanout } from './ecrans/hanout';
 import { lireEtat } from './etat';
 import { afficherBandeau } from './ui/bandeau';
 import { t } from './i18n';
@@ -33,6 +34,10 @@ function router(): void {
     return ecranCarnet(racine);
   }
   if (page === 'confidentialite') return ecranConfidentialite(racine);
+  if (page === 'hanout') {
+    suivre('ecran_vu', { ecran: 'hanout' });
+    return ecranHanout(racine);
+  }
   if (page === 'mission' && id && MISSIONS_JOUABLES[id] && trouverMission(id)) {
     suivre('mission_commencee', { mission: id });
     return MISSIONS_JOUABLES[id](racine);

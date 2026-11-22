@@ -1,7 +1,10 @@
 import { MISSIONS, MODULES, Mission, ModuleId, nomModule, titreMission } from '../contenu/missions';
 import { etoiles, lireEtat, missionReussie, ville } from '../etat';
 import { t } from '../i18n';
-import { icone } from '../ui/dessins';
+import { chargerBoutique, multiplicateur } from '../boutique';
+import { revenuParSeconde } from '../economie/clicker';
+import { icone, vignetteAmelioration } from '../ui/dessins';
+import { prix } from '../ui/format';
 import { afficher, echapper } from '../ui/dom';
 
 function ligneMission(m: Mission, couleur: string): string {
@@ -41,6 +44,11 @@ export function ecranCarnet(racine: HTMLElement): void {
 </section>`;
     })
     .join('');
+  const boutique = chargerBoutique();
+  const sousHanout = boutique.total > 0
+    ? t('carnet.hanout.sous', { caisse: prix(boutique.caisse), revenu: prix(revenuParSeconde(boutique, multiplicateur())) })
+    : t('carnet.hanout.vide');
+  const carteHanout = `<a class="carte-hanout" href="#/hanout">${vignetteAmelioration('etagere')}<span class="texte"><b>${t('carnet.hanout.titre')}</b><span class="petit">${echapper(sousHanout)}</span></span><span class="bouton-mini">${t('carnet.hanout.bouton')}</span></a>`;
   afficher(
     racine,
     `<main class="ecran carnet">
@@ -50,6 +58,7 @@ export function ecranCarnet(racine: HTMLElement): void {
     <span class="compteur" title="${echapper(compteur)}">${icone('etoile', '#F2B632', 16)} <span>${echapper(compteur)}</span></span>
   </header>
   <div class="carnet-corps">
+    ${carteHanout}
     <div class="defi">${icone('trophee', '#fff', 22)}<p><span class="petit">${t('carnet.defi.petit')}</span><b>${t(edu ? 'carnet.defi.edu' : 'carnet.defi.public')}</b></p>
       <a class="lien-version" href="#/">${t('carnet.version', { v: t(edu ? 'mode.edu.titre' : 'mode.public.titre') })}</a></div>
     <div class="pistes">${pistes}</div>
