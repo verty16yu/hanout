@@ -11,18 +11,22 @@ export interface Produit {
   benefice: number;
   /** Le client qui viendra le demander s'il manque. */
   demandePar: string;
+  /** Formes du nom pour les phrases : « du café », « au café ». */
+  partitif: string;
+  contracte: string;
+  clientsPluriel?: boolean;
 }
 
 export const BUDGET_PREMIER_JOUR = 500;
 
 export const PRODUITS: Produit[] = [
-  { id: 'pain', nom: 'Pain', cout: 90, benefice: 70, demandePar: 'Karim' },
-  { id: 'lait', nom: 'Lait', cout: 120, benefice: 80, demandePar: 'Mme Benali' },
-  { id: 'cafe', nom: 'Café', cout: 110, benefice: 85, demandePar: 'Ammi Saïd' },
-  { id: 'semoule', nom: 'Semoule', cout: 150, benefice: 60, demandePar: 'Mme Benali' },
-  { id: 'huile', nom: 'Huile', cout: 140, benefice: 65, demandePar: 'Yacine' },
-  { id: 'jus', nom: 'Jus', cout: 100, benefice: 55, demandePar: 'les enfants de l’école' },
-  { id: 'bonbons', nom: 'Bonbons', cout: 60, benefice: 50, demandePar: 'les enfants de l’école' },
+  { id: 'pain', nom: 'Pain', cout: 90, benefice: 70, demandePar: 'Karim', partitif: 'du pain', contracte: 'au pain' },
+  { id: 'lait', nom: 'Lait', cout: 120, benefice: 80, demandePar: 'Mme Benali', partitif: 'du lait', contracte: 'au lait' },
+  { id: 'cafe', nom: 'Café', cout: 110, benefice: 85, demandePar: 'Ammi Saïd', partitif: 'du café', contracte: 'au café' },
+  { id: 'semoule', nom: 'Semoule', cout: 150, benefice: 60, demandePar: 'Mme Benali', partitif: 'de la semoule', contracte: 'à la semoule' },
+  { id: 'huile', nom: 'Huile', cout: 140, benefice: 65, demandePar: 'Yacine', partitif: 'de l’huile', contracte: 'à l’huile' },
+  { id: 'jus', nom: 'Jus', cout: 100, benefice: 55, demandePar: 'les enfants de l’école', partitif: 'du jus', contracte: 'au jus', clientsPluriel: true },
+  { id: 'bonbons', nom: 'Bonbons', cout: 60, benefice: 50, demandePar: 'les enfants de l’école', partitif: 'des bonbons', contracte: 'aux bonbons', clientsPluriel: true },
 ];
 
 export function trouverProduit(id: string): Produit {
@@ -69,6 +73,10 @@ export function coutOpportunite(ids: readonly string[]): { produit: Produit; val
 }
 
 /** Les clients qui repartent les mains vides, un par produit manquant. */
-export function demandesNonServies(ids: readonly string[]): { client: string; produit: string }[] {
-  return PRODUITS.filter((p) => !ids.includes(p.id)).map((p) => ({ client: p.demandePar, produit: p.nom }));
+export function demandesNonServies(ids: readonly string[]): { client: string; produit: string; phrase: string }[] {
+  return PRODUITS.filter((p) => !ids.includes(p.id)).map((p) => ({
+    client: p.demandePar,
+    produit: p.nom,
+    phrase: `${p.clientsPluriel ? 'voulaient' : 'voulait'} ${p.partitif}, mais tu n’en avais pas.`,
+  }));
 }

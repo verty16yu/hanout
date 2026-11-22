@@ -31,7 +31,7 @@ describe('Intro 1 — Le premier jour (rareté et coût d’opportunité)', () =
   });
 
   it('liste les clients repartis sans leur produit', () => {
-    expect(demandesNonServies(['pain', 'lait', 'cafe', 'jus', 'bonbons', 'semoule'])).toEqual([{ client: 'Yacine', produit: 'Huile' }]);
+    expect(demandesNonServies(['pain', 'lait', 'cafe', 'jus', 'bonbons', 'semoule'])).toMatchObject([{ client: 'Yacine', produit: 'Huile', phrase: 'voulait de l’huile, mais tu n’en avais pas.' }]);
   });
 });
 
