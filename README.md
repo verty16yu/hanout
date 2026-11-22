@@ -1,0 +1,72 @@
+# Hanout · حانوت
+
+**Du quartier au monde.** Hanout est un jeu éducatif de gestion : tu tiens un *hanout*, l’épicerie de quartier, et tu apprends l’économie en prenant de vraies décisions de commerçant.
+
+La première version est une **version éducative** pour la Licence 1 SEGC. Chaque mission met en scène un chapitre de cours de *Statistics 1*, *Microeconomics 1* ou *Introduction to Economics*.
+
+▶ **Jouer :** https://verty16yu.github.io/hanout/ (version web, faite pour le téléphone)
+
+| Accueil | Carnet de missions | Marchandage au comptoir | Histogramme |
+| --- | --- | --- | --- |
+| ![Accueil](docs/captures/accueil.png) | ![Carnet](docs/captures/carnet.png) | ![Comptoir](docs/captures/comptoir.png) | ![Histogramme](docs/captures/histogramme.png) |
+
+## Le principe
+
+Une mission dure 5 à 10 minutes et se joue toujours en quatre temps :
+
+1. **Une situation** au hanout : un client, un voisin ou un événement pose un problème concret.
+2. **Une décision** : un prix, un stock, un horaire. Aucune formule n’est donnée d’avance.
+3. **Le résultat** : le quartier réagit, les chiffres apparaissent.
+4. **Le débrief d’Ammi Rabah**, l’ancien épicier : la notion est nommée, une question invite à réfléchir, puis deux questions de cours font gagner un badge.
+
+## Les missions du prototype
+
+| Mission | Cours | Ce que tu apprends |
+| --- | --- | --- |
+| Intro 1 · Le premier jour | Introduction à l’économie, ch. 2 | Rareté, choix, coût d’opportunité |
+| Micro 4 · Le juste prix | Microéconomie, ch. 4 | Disposition à payer, surplus du consommateur et du producteur |
+| Stats 3 · À quelle heure ouvrir ? | Statistiques, ch. 2–3 | Classes, histogramme, classe modale |
+
+Les 16 autres missions (élasticités, prix plafond, courbes d’indifférence, dispersion, inflation…) sont prévues dans la feuille de route.
+
+## Pensé pour l’Algérie, ouvert au monde
+
+- La ville de départ est proposée d’après le fuseau horaire du téléphone, sans géolocalisation : Alger, Oran, Constantine, Nanterre, Paris, Marseille, Casablanca ou Tunis.
+- Les prix s’affichent en dinars, euros, dirhams ou dinars tunisiens.
+- Le jeu est léger (environ 15 Ko compressés de JavaScript) pour tourner sur des téléphones d’entrée de gamme.
+- Les animations se coupent si le téléphone demande moins de mouvement.
+
+## Sous le capot
+
+- **TypeScript + Vite**, sans framework, dessins en SVG (aucune image à télécharger).
+- Les règles économiques sont séparées de l’affichage (`src/economie/`) et testées avec **Vitest**.
+- Progression sauvegardée sur le téléphone (`localStorage`).
+- Publication automatique sur **GitHub Pages** à chaque mise à jour de `main`.
+
+```bash
+npm install
+npm run dev     # lance le jeu en local
+npm test        # tests du moteur économique
+npm run build   # version de production dans dist/
+```
+
+```
+src/
+  economie/   règles du jeu (premierJour, comptoir, histogramme, monnaie)
+  missions/   les trois missions jouables
+  ecrans/     accueil et carnet de missions
+  ui/         dessins SVG, débrief et quiz, scène animée du quartier
+  contenu/    liste des 19 missions et des modules
+tests/        tests unitaires
+```
+
+## Feuille de route
+
+- [x] **Phase 0 — Prototype** : 3 missions, une par module
+- [ ] **Phase 1 — Version éducative** : les 19 missions, testées par le groupe 3 de L1 SEGC
+- [ ] **Phase 2 — Grand public** : application Android, français / arabe / anglais
+- [ ] **Phase 3 — Académie et monde** : espace enseignant, défis entre groupes, nouvelles villes
+
+## Auteur
+
+Projet conçu par **Mohamed Yanis Kireche**, étudiant en L1 SEGC (sciences économiques, de gestion et commerciales) à HIS, avec Claude (Anthropic) pour le code et les visuels.
