@@ -1,19 +1,23 @@
 // Mission Intro 1 « Le premier jour » : rareté, choix, coût d'opportunité.
 import { trouverMission } from '../contenu/missions';
-import { formaterPrix } from '../economie/monnaie';
 import {
   BUDGET_PREMIER_JOUR, PRODUITS, beneficeTotal, coutOpportunite, coutTotal, demandesNonServies, meilleurPanier, peutAjouter,
 } from '../economie/premierJour';
-import { ville } from '../etat';
+import { t, tListe } from '../i18n';
 import { barreMission } from '../ui/barre';
-import { brancherDebrief, htmlDebrief } from '../ui/debrief';
+import { FinDeMission, brancherFin, htmlFin, question } from '../ui/debrief';
 import { ammi } from '../ui/dessins';
-import { afficher, echapper } from '../ui/dom';
+import { afficher } from '../ui/dom';
+import { prix } from '../ui/format';
+
+/** Étoiles (grand public) : part du meilleur bénéfice possible. */
+export function etoilesIntro1(gain: number, meilleur: number): number {
+  const r = meilleur > 0 ? gain / meilleur : 0;
+  return r >= 0.95 ? 3 : r >= 0.8 ? 2 : 1;
+}
 
 export function missionIntro1(racine: HTMLElement): void {
   const mission = trouverMission('intro-1')!;
-  const monnaie = ville().monnaie;
-  const prix = (u: number) => formaterPrix(u, monnaie);
   let choisis: string[] = [];
 
   function rendreChoix(garderPosition = false): void {
@@ -23,32 +27,37 @@ export function missionIntro1(racine: HTMLElement): void {
     afficher(
       racine,
       `<main class="ecran mission">
-${barreMission(mission, 'Étape 1 / 2')}
-<div class="contenu">
-  <div class="bulle-ammi">${ammi(40)}<p>C’est ton premier jour au hanout ! Tu as <b>${prix(BUDGET_PREMIER_JOUR)}</b> pour remplir tes rayons cette semaine. Choisis bien : tu ne pourras pas tout prendre.</p></div>
-  <div class="budget" aria-live="polite">
-    <div class="budget-ligne"><span>Budget dépensé</span><b>${prix(depense)} / ${prix(BUDGET_PREMIER_JOUR)}</b></div>
-    <div class="jauge" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pourcent}" aria-label="Budget dépensé"><span style="width:${pourcent}%"></span></div>
-    <p class="petit">Il te reste ${prix(reste)}.</p>
+${barreMission(mission, t('barre.etape', { a: 1, b: 2 }))}
+<div class="mise-en-page">
+  <div class="col-gauche">
+    <div class="bulle-ammi">${ammi(40)}<p>${t('intro1.consigne', { budget: prix(BUDGET_PREMIER_JOUR) })}</p></div>
+    <div class="budget" aria-live="polite">
+      <div class="budget-ligne"><span>${t('intro1.depense')}</span><b>${prix(depense)} / ${prix(BUDGET_PREMIER_JOUR)}</b></div>
+      <div class="jauge" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pourcent}" aria-label="${t('intro1.depense')}"><span style="width:${pourcent}%"></span></div>
+      <p class="petit">${t('intro1.reste', { reste: prix(reste) })}</p>
+    </div>
+    <button type="button" class="bouton principal grand seulement-large" data-action="ouvrir" ${choisis.length === 0 ? 'disabled' : ''}>${t('intro1.ouvrir')}</button>
   </div>
-  <div class="grille-produits">
-    ${PRODUITS.map((p) => {
-      const pris = choisis.includes(p.id);
-      const possible = peutAjouter(choisis, p.id);
-      return `<button type="button" class="produit${pris ? ' pris' : ''}" data-action="produit" data-id="${p.id}" aria-pressed="${pris}" ${!possible ? 'disabled' : ''}>
-  <span class="nom">${echapper(p.nom)}</span>
-  <span class="ligne">Stock : <b>${prix(p.cout)}</b></span>
-  <span class="ligne gain">Bénéfice prévu : <b>${prix(p.benefice)}</b></span>
-  <span class="etat">${pris ? '✓ Dans tes rayons' : possible ? 'Ajouter' : 'Budget insuffisant'}</span>
+  <div class="col-droite">
+    <div class="grille-produits">
+      ${PRODUITS.map((p) => {
+        const pris = choisis.includes(p.id);
+        const possible = peutAjouter(choisis, p.id);
+        return `<button type="button" class="produit${pris ? ' pris' : ''}" data-id="${p.id}" aria-pressed="${pris}" ${!possible ? 'disabled' : ''}>
+  <span class="nom">${t(`produit.${p.id}`)}</span>
+  <span class="ligne">${t('intro1.stock', { x: prix(p.cout) })}</span>
+  <span class="ligne gain">${t('intro1.benefice', { x: prix(p.benefice) })}</span>
+  <span class="etat">${pris ? t('intro1.pris') : possible ? t('intro1.ajouter') : t('intro1.insuffisant')}</span>
 </button>`;
-    }).join('')}
+      }).join('')}
+    </div>
+    <button type="button" class="bouton principal grand seulement-etroit" data-action="ouvrir" ${choisis.length === 0 ? 'disabled' : ''}>${t('intro1.ouvrir')}</button>
   </div>
-  <button type="button" class="bouton principal grand" data-action="ouvrir" ${choisis.length === 0 ? 'disabled' : ''}>Ouvrir la semaine</button>
 </div>
 </main>`,
       { garderPosition },
     );
-    racine.querySelectorAll<HTMLButtonElement>('[data-action="produit"]').forEach((b) =>
+    racine.querySelectorAll<HTMLButtonElement>('.produit').forEach((b) =>
       b.addEventListener('click', () => {
         const id = b.dataset.id!;
         choisis = choisis.includes(id) ? choisis.filter((x) => x !== id) : [...choisis, id];
@@ -56,52 +65,56 @@ ${barreMission(mission, 'Étape 1 / 2')}
         racine.querySelector<HTMLElement>(`[data-id="${id}"]`)?.focus({ preventScroll: true });
       }),
     );
-    racine.querySelector('[data-action="ouvrir"]')?.addEventListener('click', rendreResultat);
+    racine.querySelectorAll('[data-action="ouvrir"]').forEach((b) => b.addEventListener('click', rendreResultat));
   }
 
   function rendreResultat(): void {
     const gain = beneficeTotal(choisis);
     const meilleur = meilleurPanier();
     const co = coutOpportunite(choisis);
-    const clientsDecus = demandesNonServies(choisis);
-    const debrief = {
+    const manques = demandesNonServies(choisis);
+    const fin: FinDeMission = {
       missionId: mission.id,
-      titre: 'Choisir, c’est renoncer',
-      explication: `Tes ${prix(BUDGET_PREMIER_JOUR)} sont limités, mais les envies de tes clients ne s’arrêtent jamais : c’est la <b>rareté</b>, le cœur du problème économique. Tu as donc dû <b>choisir</b>.${co ? ` En prenant ces produits, tu as renoncé notamment <b>${echapper(co.produit.contracte)}</b>, qui t’aurait rapporté ${prix(co.valeur)} : c’est ton <b>coût d’opportunité</b>, la valeur de la meilleure option abandonnée.` : ''} Le meilleur panier possible rapportait ${prix(meilleur.benefice)} ; tu as fait ${prix(gain)}.`,
-      notions: ['Rareté', 'Choix', 'Coût d’opportunité'],
-      reflexion: 'Si ton budget doublait, la rareté disparaîtrait-elle pour autant ? Pense au jour où le quartier grandit et où les clients réclament de nouveaux produits.',
-      questions: [
-        {
-          question: 'D’où vient le problème économique ?',
-          choix: ['Des ressources limitées face à des besoins illimités', 'Du manque de magasins dans le quartier', 'Des prix trop élevés fixés par les commerçants', 'Du fait que les clients ne savent pas ce qu’ils veulent'],
-          bonne: 0,
-          explication: 'La rareté oblige à choisir : c’est le problème économique fondamental.',
-        },
-        {
-          question: 'Quelles sont les questions fondamentales de l’économie ?',
-          choix: ['Quoi produire, comment produire, pour qui produire', 'Où vendre, quand vendre, à quel prix', 'Combien gagner, combien dépenser, combien épargner', 'Qui commande, qui obéit, qui paie'],
-          bonne: 0,
-          explication: 'Toute société, comme ton hanout, doit y répondre parce que les ressources sont rares.',
-        },
-      ],
+      titre: t('intro1.debrief.titre'),
+      explication: t('intro1.debrief.texte', {
+        budget: prix(BUDGET_PREMIER_JOUR),
+        renonce: co ? t(`produit.${co.produit.id}.renonce`) : '—',
+        valeur: co ? prix(co.valeur) : '—',
+        meilleur: prix(meilleur.benefice),
+        gain: prix(gain),
+      }),
+      conseil: t('intro1.conseil', { meilleur: prix(meilleur.benefice), gain: prix(gain) }),
+      notions: tListe('intro1.notions'),
+      reflexion: t('intro1.reflexion'),
+      questions: [question('intro1.q1'), question('intro1.q2')],
+      etoiles: etoilesIntro1(gain, meilleur.benefice),
     };
     afficher(
       racine,
       `<main class="ecran mission">
-${barreMission(mission, 'Étape 2 / 2')}
-<div class="contenu">
-  <section class="resultat" aria-labelledby="titre-resultat">
-    <p class="petit">Ta première semaine</p>
-    <h2 id="titre-resultat" class="gros-chiffre">+${prix(gain)}</h2>
-    <p>de bénéfice, avec ${choisis.length} produit${choisis.length > 1 ? 's' : ''} en rayon.</p>
-  </section>
-  ${clientsDecus.length ? `<section class="fil" aria-label="Dans le quartier cette semaine"><p class="fil-titre"><span class="direct" aria-hidden="true"></span>Dans le quartier cette semaine</p>
-    <ul>${clientsDecus.map((x) => `<li><b>${echapper(x.client)}</b> ${echapper(x.phrase)}</li>`).join('')}</ul></section>` : ''}
-  ${htmlDebrief(debrief)}
+${barreMission(mission, t('barre.etape', { a: 2, b: 2 }))}
+<div class="mise-en-page">
+  <div class="col-gauche">
+    <section class="resultat" aria-labelledby="titre-resultat">
+      <p class="petit">${t('intro1.semaine')}</p>
+      <h2 id="titre-resultat" class="gros-chiffre">+${prix(gain)}</h2>
+      <p>${t('intro1.resume', { n: choisis.length })}</p>
+    </section>
+    ${
+      manques.length
+        ? `<section class="fil" aria-label="${t('intro1.fil')}"><p class="fil-titre"><span class="direct" aria-hidden="true"></span>${t('intro1.fil')}</p>
+      <ul>${manques.map((x) => `<li>${t(x.pluriel ? 'intro1.manquePluriel' : 'intro1.manque', { qui: t(`perso.${x.personnage}`), quoi: t(`produit.${x.produit}.partitif`) })}</li>`).join('')}</ul></section>`
+        : ''
+    }
+  </div>
+  <div class="col-droite">${htmlFin(fin)}</div>
 </div>
 </main>`,
     );
-    brancherDebrief(racine, debrief);
+    brancherFin(racine, fin, () => {
+      choisis = [];
+      rendreChoix();
+    });
   }
 
   rendreChoix();

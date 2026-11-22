@@ -5,53 +5,20 @@
 export type Visage = 'neutre' | 'content' | 'fache';
 
 export interface Client {
+  /** Identifiant ; le nom, la description, le produit et les phrases sont dans i18n. */
   id: string;
-  nom: string;
-  description: string;
-  produit: string;
   /** Prix payé au grossiste (coût du produit pour le hanout), en unités de base. */
   cout: number;
   /** Prix maximum que le client accepte de payer, en unités de base. Caché au joueur. */
   dispositionAPayer: number;
-  phraseAccueil: string;
   couleurHaut: string;
   teint: string;
 }
 
 export const CLIENTS_COMPTOIR: Client[] = [
-  {
-    id: 'karim',
-    nom: 'Karim',
-    description: 'étudiant, client depuis 2 mois',
-    produit: 'Miel de montagne, 500 g',
-    cout: 4,
-    dispositionAPayer: 8.5,
-    phraseAccueil: 'Salam ! Ce miel de montagne, tu me le fais à combien ?',
-    couleurHaut: '#B83E32',
-    teint: '#C68A5E',
-  },
-  {
-    id: 'benali',
-    nom: 'Mme Benali',
-    description: 'voisine, vient tous les matins',
-    produit: 'Huile d’olive, 1 L',
-    cout: 5,
-    dispositionAPayer: 7,
-    phraseAccueil: 'Bonjour mon fils. L’huile d’olive, elle est à combien aujourd’hui ?',
-    couleurHaut: '#3FA67A',
-    teint: '#E0B48A',
-  },
-  {
-    id: 'yacine',
-    nom: 'Yacine',
-    description: 'livreur, toujours pressé',
-    produit: 'Café moulu, 250 g',
-    cout: 2,
-    dispositionAPayer: 6,
-    phraseAccueil: 'Vite, vite ! Un paquet de café, c’est combien ?',
-    couleurHaut: '#1E6FA8',
-    teint: '#8D5A3B',
-  },
+  { id: 'karim', cout: 4, dispositionAPayer: 8.5, couleurHaut: '#B83E32', teint: '#C68A5E' },
+  { id: 'benali', cout: 5, dispositionAPayer: 7, couleurHaut: '#3FA67A', teint: '#E0B48A' },
+  { id: 'yacine', cout: 2, dispositionAPayer: 6, couleurHaut: '#1E6FA8', teint: '#8D5A3B' },
 ];
 
 export const PATIENCE_INITIALE = 3;
@@ -64,6 +31,7 @@ export interface Reaction {
   issue: Issue;
   visage: Visage;
   patienceRestante: number;
+  /** Clé du message dans i18n (reaction.*). */
   message: string;
 }
 
@@ -75,17 +43,17 @@ export function reagir(client: Client, prix: number, patience: number): Reaction
       issue: 'vente',
       visage: 'content',
       patienceRestante: patience,
-      message: tresBon ? 'Wallah, c’est donné ! Je prends.' : 'Bon… d’accord, marché conclu !',
+      message: tresBon ? 'reaction.donne' : 'reaction.accord',
     };
   }
   const restante = patience - 1;
   if (restante <= 0) {
-    return { issue: 'depart', visage: 'fache', patienceRestante: 0, message: 'Laisse tomber, je vais voir à la supérette.' };
+    return { issue: 'depart', visage: 'fache', patienceRestante: 0, message: 'reaction.depart' };
   }
   if (prix <= client.dispositionAPayer * SEUIL_HESITATION) {
-    return { issue: 'hesite', visage: 'neutre', patienceRestante: restante, message: 'Hmm… c’est un peu cher quand même. Fais un effort ?' };
+    return { issue: 'hesite', visage: 'neutre', patienceRestante: restante, message: 'reaction.hesite' };
   }
-  return { issue: 'refus', visage: 'fache', patienceRestante: restante, message: 'Quoi ?! À ce prix-là ? Tu rigoles, khoya !' };
+  return { issue: 'refus', visage: 'fache', patienceRestante: restante, message: 'reaction.refus' };
 }
 
 /** Surplus du consommateur : ce qu'il était prêt à payer moins ce qu'il a payé. */
@@ -101,6 +69,11 @@ export function surplusProducteur(client: Client, prix: number): number {
 export interface Vente {
   clientId: string;
   prix: number | null;
+}
+
+/** Le plus grand surplus que le hanout peut tirer d'un client : vendre exactement à sa disposition à payer. */
+export function surplusProducteurMax(clients: Client[] = CLIENTS_COMPTOIR): number {
+  return clients.reduce((s, c) => s + (c.dispositionAPayer - c.cout), 0);
 }
 
 /** Bilan de toutes les ventes : surplus de chacun et surplus total (le gain de l'échange). */

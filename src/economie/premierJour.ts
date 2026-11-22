@@ -4,29 +4,26 @@
 
 export interface Produit {
   id: string;
-  nom: string;
   /** Coût du stock pour la semaine, en unités de base. */
   cout: number;
   /** Bénéfice attendu sur la semaine, en unités de base. */
   benefice: number;
-  /** Le client qui viendra le demander s'il manque. */
+  /** Le personnage qui viendra le demander s'il manque (identifiant, voir i18n). */
   demandePar: string;
-  /** Formes du nom pour les phrases : « du café », « au café ». */
-  partitif: string;
-  contracte: string;
+  /** Vrai si ce sont plusieurs personnes (accord du verbe). */
   clientsPluriel?: boolean;
 }
 
 export const BUDGET_PREMIER_JOUR = 500;
 
 export const PRODUITS: Produit[] = [
-  { id: 'pain', nom: 'Pain', cout: 90, benefice: 70, demandePar: 'Karim', partitif: 'du pain', contracte: 'au pain' },
-  { id: 'lait', nom: 'Lait', cout: 120, benefice: 80, demandePar: 'Mme Benali', partitif: 'du lait', contracte: 'au lait' },
-  { id: 'cafe', nom: 'Café', cout: 110, benefice: 85, demandePar: 'Ammi Saïd', partitif: 'du café', contracte: 'au café' },
-  { id: 'semoule', nom: 'Semoule', cout: 150, benefice: 60, demandePar: 'Mme Benali', partitif: 'de la semoule', contracte: 'à la semoule' },
-  { id: 'huile', nom: 'Huile', cout: 140, benefice: 65, demandePar: 'Yacine', partitif: 'de l’huile', contracte: 'à l’huile' },
-  { id: 'jus', nom: 'Jus', cout: 100, benefice: 55, demandePar: 'les enfants de l’école', partitif: 'du jus', contracte: 'au jus', clientsPluriel: true },
-  { id: 'bonbons', nom: 'Bonbons', cout: 60, benefice: 50, demandePar: 'les enfants de l’école', partitif: 'des bonbons', contracte: 'aux bonbons', clientsPluriel: true },
+  { id: 'pain', cout: 90, benefice: 70, demandePar: 'karim' },
+  { id: 'lait', cout: 120, benefice: 80, demandePar: 'benali' },
+  { id: 'cafe', cout: 110, benefice: 85, demandePar: 'said' },
+  { id: 'semoule', cout: 150, benefice: 60, demandePar: 'benali' },
+  { id: 'huile', cout: 140, benefice: 65, demandePar: 'yacine' },
+  { id: 'jus', cout: 100, benefice: 55, demandePar: 'enfants', clientsPluriel: true },
+  { id: 'bonbons', cout: 60, benefice: 50, demandePar: 'enfants', clientsPluriel: true },
 ];
 
 export function trouverProduit(id: string): Produit {
@@ -72,11 +69,7 @@ export function coutOpportunite(ids: readonly string[]): { produit: Produit; val
   return { produit: meilleur, valeur: meilleur.benefice };
 }
 
-/** Les clients qui repartent les mains vides, un par produit manquant. */
-export function demandesNonServies(ids: readonly string[]): { client: string; produit: string; phrase: string }[] {
-  return PRODUITS.filter((p) => !ids.includes(p.id)).map((p) => ({
-    client: p.demandePar,
-    produit: p.nom,
-    phrase: `${p.clientsPluriel ? 'voulaient' : 'voulait'} ${p.partitif}, mais tu n’en avais pas.`,
-  }));
+/** Les personnages qui repartent les mains vides, un par produit manquant. */
+export function demandesNonServies(ids: readonly string[]): { personnage: string; produit: string; pluriel: boolean }[] {
+  return PRODUITS.filter((p) => !ids.includes(p.id)).map((p) => ({ personnage: p.demandePar, produit: p.id, pluriel: !!p.clientsPluriel }));
 }

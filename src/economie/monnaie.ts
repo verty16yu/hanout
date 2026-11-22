@@ -61,14 +61,17 @@ export function trouverVille(id: string): Ville {
   return VILLES.find((v) => v.id === id) ?? VILLES[0];
 }
 
-/** Formate un montant exprimé en unités de base dans la monnaie de la ville. */
-export function formaterPrix(unites: number, monnaie: Monnaie): string {
+/** Formate un montant exprimé en unités de base dans la monnaie de la ville et la langue du joueur. */
+export function formaterPrix(unites: number, monnaie: Monnaie, langue: 'fr' | 'en' = 'fr'): string {
   const valeur = unites * monnaie.coefficient;
   const arrondi = monnaie.decimales === 0 ? Math.round(valeur) : valeur;
-  const texte = arrondi.toLocaleString('fr-FR', {
-    minimumFractionDigits: monnaie.decimales,
-    maximumFractionDigits: monnaie.decimales,
-  });
-  // toLocaleString utilise des espaces fines insécables : on les remplace pour l'affichage.
-  return `${texte} ${monnaie.symbole}`.replace(/[  ]/g, ' ');
+  const texte = arrondi
+    .toLocaleString(langue === 'en' ? 'en-GB' : 'fr-FR', {
+      minimumFractionDigits: monnaie.decimales,
+      maximumFractionDigits: monnaie.decimales,
+    })
+    // toLocaleString utilise des espaces fines insécables : on les remplace pour l'affichage.
+    .replace(/[\u202f\u00a0]/g, ' ');
+  if (langue === 'en' && monnaie.code === 'EUR') return `€${texte}`;
+  return `${texte} ${monnaie.symbole}`;
 }

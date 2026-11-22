@@ -1,31 +1,42 @@
-import { MISSIONS, MODULES, Mission, ModuleId } from '../contenu/missions';
-import { aLeBadge, lireEtat, ville } from '../etat';
+import { MISSIONS, MODULES, Mission, ModuleId, nomModule, titreMission } from '../contenu/missions';
+import { etoiles, lireEtat, missionReussie, ville } from '../etat';
+import { t } from '../i18n';
 import { icone } from '../ui/dessins';
 import { afficher, echapper } from '../ui/dom';
 
 function ligneMission(m: Mission, couleur: string): string {
-  const fait = aLeBadge(m.id);
+  const edu = lireEtat().mode === 'edu';
+  const fait = missionReussie(m.id);
   const rond = fait
     ? `<span class="rond fait" style="background:${couleur}">${icone('coche', '#fff', 20)}</span>`
     : m.jouable
       ? `<span class="rond actif" style="border-color:${couleur};color:${couleur}">${m.numero}</span>`
       : `<span class="rond verrou">${icone('cadenas', '#9A93A0', 18)}</span>`;
-  const sous = fait ? 'Terminée · badge gagné' : m.jouable ? `À jouer · ${echapper(m.notion)}` : `Bientôt · ${echapper(m.notion)}`;
-  const contenu = `${rond}<span class="texte"><span class="nom">${m.numero}. ${echapper(m.titre)} <span class="chap">${m.chapitre}</span></span><span class="sous">${sous}</span></span>`;
+  const notion = t(`mission.${m.id}.notion`);
+  let sous: string;
+  if (fait) sous = edu ? t('carnet.fait.edu') : t('carnet.fait.public', { n: etoiles(m.id) });
+  else sous = (m.jouable ? t('carnet.ajouer') : t('carnet.bientot')) + (edu ? ` · ${notion}` : '');
+  const chapitre = edu ? ` <span class="chap">${m.chapitre}</span>` : '';
+  const etoilesHtml = !edu && fait ? `<span class="mini-etoiles" aria-hidden="true">${[1, 2, 3].map((i) => icone('etoile', i <= etoiles(m.id) ? '#F2B632' : '#E2D7BF', 14)).join('')}</span>` : '';
+  const contenu = `${rond}<span class="texte"><span class="nom">${m.numero}. ${echapper(titreMission(m))}${chapitre}</span><span class="sous">${echapper(sous)}</span></span>${etoilesHtml}`;
   return m.jouable
     ? `<li><a class="ligne-mission" href="#/mission/${m.id}">${contenu}</a></li>`
     : `<li><div class="ligne-mission verrouillee" aria-disabled="true">${contenu}</div></li>`;
 }
 
 export function ecranCarnet(racine: HTMLElement): void {
-  const badges = lireEtat().badges.length;
+  const e = lireEtat();
+  const edu = e.mode === 'edu';
+  const compteur = edu
+    ? t('carnet.compteur.edu', { n: e.badges.length, total: MISSIONS.length })
+    : t('carnet.compteur.public', { n: Object.values(e.etoiles).reduce((s, x) => s + x, 0), total: MISSIONS.length * 3 });
   const pistes = (Object.keys(MODULES) as ModuleId[])
     .map((id) => {
       const mod = MODULES[id];
       const liste = MISSIONS.filter((m) => m.module === id);
-      const faits = liste.filter((m) => aLeBadge(m.id)).length;
+      const faits = liste.filter((m) => missionReussie(m.id)).length;
       return `<section class="piste" aria-labelledby="piste-${id}">
-  <div class="piste-tete" style="background:${mod.fond}"><h2 id="piste-${id}" style="color:${mod.couleur}">${echapper(mod.nom)}</h2><span style="color:${mod.couleur}">${faits} / ${liste.length}</span></div>
+  <div class="piste-tete" style="background:${mod.fond}"><h2 id="piste-${id}" style="color:${mod.couleur}">${echapper(nomModule(id))}</h2><span style="color:${mod.couleur}">${faits} / ${liste.length}</span></div>
   <ul>${liste.map((m) => ligneMission(m, mod.couleur)).join('')}</ul>
 </section>`;
     })
@@ -34,12 +45,15 @@ export function ecranCarnet(racine: HTMLElement): void {
     racine,
     `<main class="ecran carnet">
   <header class="barre">
-    <a class="retour" href="#/" aria-label="Retour à l’accueil">${icone('retour')}</a>
-    <div class="titres"><span class="petit">Hanout Académie · ${echapper(ville().nom)}</span><h1 tabindex="-1" data-focus>Carnet de missions</h1></div>
-    <span class="compteur">${icone('etoile', '#F2B632', 16)} ${badges} / ${MISSIONS.length}</span>
+    <a class="retour" href="#/" aria-label="${t('barre.retourAccueil')}">${icone('maison')}</a>
+    <div class="titres"><span class="petit">${echapper(t(edu ? 'carnet.surtitre.edu' : 'carnet.surtitre.public', { ville: ville().nom }))}</span><h1 tabindex="-1" data-focus>${t(edu ? 'carnet.titre.edu' : 'carnet.titre.public')}</h1></div>
+    <span class="compteur" title="${echapper(compteur)}">${icone('etoile', '#F2B632', 16)} <span>${echapper(compteur)}</span></span>
   </header>
-  <div class="defi">${icone('trophee', '#fff', 22)}<p><span class="petit">Bientôt : défi de la semaine</span><b>Groupe contre groupe, sur les missions du cours</b></p></div>
-  ${pistes}
+  <div class="carnet-corps">
+    <div class="defi">${icone('trophee', '#fff', 22)}<p><span class="petit">${t('carnet.defi.petit')}</span><b>${t(edu ? 'carnet.defi.edu' : 'carnet.defi.public')}</b></p>
+      <a class="lien-version" href="#/">${t('carnet.version', { v: t(edu ? 'mode.edu.titre' : 'mode.public.titre') })}</a></div>
+    <div class="pistes">${pistes}</div>
+  </div>
 </main>`,
   );
 }

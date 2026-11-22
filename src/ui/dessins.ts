@@ -22,8 +22,8 @@ const SOURCILS: Record<Visage, string> = {
 };
 
 /** Un client au comptoir, dont l'expression change selon sa réaction. */
-export function clientAuComptoir(o: { nom: string; couleurHaut: string; teint: string; visage: Visage }): string {
-  return `<svg class="client" viewBox="0 0 200 230" role="img" aria-label="${o.nom}, au comptoir, ${o.visage === 'content' ? 'content' : o.visage === 'fache' ? 'mécontent' : 'qui réfléchit'}">
+export function clientAuComptoir(o: { etiquette: string; couleurHaut: string; teint: string; visage: Visage }): string {
+  return `<svg class="client" viewBox="0 0 200 230" role="img" aria-label="${o.etiquette}">
 <rect x="48" y="150" width="104" height="90" rx="40" fill="${o.couleurHaut}"/><rect x="88" y="140" width="24" height="20" fill="${o.teint}" opacity=".85"/>
 <path d="M80 150 L100 176 L120 150" fill="#fff"/>
 <g class="respire">
@@ -54,12 +54,15 @@ export function etageres(): string {
   return `<svg class="etageres" viewBox="0 0 390 250" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><rect width="390" height="250" fill="#F1E6D0"/>${bocaux}</svg>`;
 }
 
-export function icone(nom: 'retour' | 'coche' | 'cadenas' | 'etoile' | 'coeur' | 'lieu' | 'trophee', couleur = 'currentColor', taille = 22): string {
+export function icone(nom: 'retour' | 'coche' | 'cadenas' | 'etoile' | 'coeur' | 'lieu' | 'trophee' | 'diplome' | 'panier' | 'maison', couleur = 'currentColor', taille = 22): string {
   const traits: Record<string, string> = {
     retour: '<path d="M15 18l-6-6 6-6"/>',
     coche: '<path d="M5 12l5 5 9-10"/>',
     cadenas: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
     lieu: '<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+    diplome: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/><path d="M22 9v6"/>',
+    panier: '<path d="M3 5h2l2.2 10.2a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L20 8H6"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/>',
+    maison: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
     trophee: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
   };
   if (nom === 'etoile') {

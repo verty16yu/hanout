@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BUDGET_PREMIER_JOUR, PRODUITS, beneficeTotal, coutOpportunite, coutTotal, demandesNonServies, meilleurPanier, peutAjouter,
 } from '../src/economie/premierJour';
-import { CLIENTS_COMPTOIR, PATIENCE_INITIALE, bilan, reagir, surplusConsommateur, surplusProducteur } from '../src/economie/comptoir';
+import { CLIENTS_COMPTOIR, PATIENCE_INITIALE, bilan, reagir, surplusConsommateur, surplusProducteur, surplusProducteurMax } from '../src/economie/comptoir';
 import { FREQUENTATION, HORAIRES, classeModale, clientsServis, effectifTotal, frequence, meilleurHoraire } from '../src/economie/histogramme';
 import { MONNAIES, formaterPrix, villeParDefaut } from '../src/economie/monnaie';
 
@@ -31,7 +31,7 @@ describe('Intro 1 — Le premier jour (rareté et coût d’opportunité)', () =
   });
 
   it('liste les clients repartis sans leur produit', () => {
-    expect(demandesNonServies(['pain', 'lait', 'cafe', 'jus', 'bonbons', 'semoule'])).toMatchObject([{ client: 'Yacine', produit: 'Huile', phrase: 'voulait de l’huile, mais tu n’en avais pas.' }]);
+    expect(demandesNonServies(['pain', 'lait', 'cafe', 'jus', 'bonbons', 'semoule'])).toEqual([{ personnage: 'yacine', produit: 'huile', pluriel: false }]);
   });
 });
 
@@ -40,7 +40,7 @@ describe('Micro 4 — Le juste prix (surplus)', () => {
 
   it('vend si le prix ne dépasse pas la disposition à payer', () => {
     expect(reagir(karim, 8.5, PATIENCE_INITIALE).issue).toBe('vente');
-    expect(reagir(karim, 5, PATIENCE_INITIALE).visage).toBe('content');
+    expect(reagir(karim, 5, PATIENCE_INITIALE)).toMatchObject({ visage: 'content', message: 'reaction.donne' });
   });
 
   it('hésite juste au-dessus, refuse bien au-dessus, part quand la patience est épuisée', () => {
@@ -55,6 +55,10 @@ describe('Micro 4 — Le juste prix (surplus)', () => {
     const b = bilan([{ clientId: 'karim', prix: 7 }, { clientId: 'benali', prix: null }]);
     expect(b.total).toBeCloseTo(4.5); // = disposition à payer − coût, quel que soit le prix
     expect(b.lignes[1].producteur).toBe(0);
+  });
+
+  it('calcule le surplus maximal que le hanout peut obtenir', () => {
+    expect(surplusProducteurMax()).toBeCloseTo(4.5 + 2 + 4);
   });
 });
 
@@ -85,5 +89,7 @@ describe('Monnaie et ville de départ', () => {
   it('affiche les prix dans la monnaie locale', () => {
     expect(formaterPrix(8.5, MONNAIES.EUR)).toBe('8,50 €');
     expect(formaterPrix(8.5, MONNAIES.DZD)).toBe('1 700 DA');
+    expect(formaterPrix(8.5, MONNAIES.EUR, 'en')).toBe('€8.50');
+    expect(formaterPrix(8.5, MONNAIES.DZD, 'en')).toBe('1,700 DA');
   });
 });

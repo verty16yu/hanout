@@ -3,6 +3,8 @@ import './style.css';
 import { trouverMission } from './contenu/missions';
 import { ecranAccueil } from './ecrans/accueil';
 import { ecranCarnet } from './ecrans/carnet';
+import { lireEtat } from './etat';
+import { t } from './i18n';
 import { missionIntro1 } from './missions/intro1';
 import { missionMicro4 } from './missions/micro4';
 import { missionStats3 } from './missions/stats3';
@@ -16,6 +18,10 @@ const MISSIONS_JOUABLES: Record<string, (racine: HTMLElement) => void> = {
 function router(): void {
   const racine = document.getElementById('app');
   if (!racine) return;
+  const e = lireEtat();
+  document.documentElement.lang = e.langue;
+  document.title = `Hanout — ${t('app.slogan')}`;
+  document.body.dataset.mode = e.mode;
   const chemin = location.hash.replace(/^#/, '') || '/';
   const [, page, id] = chemin.split('/');
   if (page === 'carnet') return ecranCarnet(racine);

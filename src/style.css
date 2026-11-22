@@ -30,7 +30,7 @@ h1:focus, h2:focus { outline: none; }
 .app { max-width: 480px; min-height: 100vh; margin: 0 auto; background: var(--chaux); box-shadow: 0 0 0 1px var(--trait); }
 .ecran { display: flex; flex-direction: column; min-height: 100vh; }
 .contenu { display: flex; flex-direction: column; gap: 14px; padding: 14px 16px 32px; }
-.contenu > *, .debrief > * { min-width: 0; }
+.contenu > *, .debrief > *, .col-gauche > *, .col-droite > * { min-width: 0; }
 .petit { font-size: 12.5px; color: var(--gris); }
 .note { margin: 0; font-size: 12.5px; color: var(--gris); text-align: center; }
 
@@ -142,12 +142,12 @@ h1:focus, h2:focus { outline: none; }
 .carte h2 { margin: 0 0 6px; font-family: var(--titre); font-size: 18px; }
 
 /* Stats 3 : histogramme */
-.histo { display: flex; align-items: flex-end; gap: 3px; height: 170px; }
+.histo { --hmax: 120px; display: flex; align-items: flex-end; gap: 3px; height: calc(var(--hmax) + 44px); }
 .barre-h { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 2px; height: 100%; padding: 0; border: none; background: none; cursor: pointer; }
 .barre-h:disabled { cursor: default; }
 .barre-h .n { font-size: 10.5px; color: var(--gris); }
 .barre-h .h { font-size: 10.5px; color: var(--gris); }
-.barre-h .b { width: 100%; border-radius: 4px 4px 0 0; background: #bfd6c9; transition: background .3s; }
+.barre-h .b { width: 100%; height: calc(var(--r, 0) * var(--hmax)); border-radius: 4px 4px 0 0; background: #bfd6c9; transition: background .3s; }
 .barre-h:not(:disabled):hover .b { background: #9cc5b0; }
 .barre-h.couvert .b { background: var(--menthe); }
 .barre-h.choisie .b { outline: 3px solid var(--bleu); outline-offset: 1px; }
@@ -179,6 +179,87 @@ h1:focus, h2:focus { outline: none; }
 .badge-gagne[hidden] { display: none; }
 .badge-gagne p { margin: 0; }
 .badge-gagne .gros { font-family: var(--titre); font-size: 20px; font-weight: 800; color: var(--ocre-fonce); }
+
+/* Mise en page des missions : une colonne sur téléphone, deux sur ordinateur */
+.mise-en-page { display: flex; flex-direction: column; gap: 14px; padding: 0 0 32px; }
+.col-gauche, .col-droite { display: flex; flex-direction: column; gap: 14px; padding: 0 16px; }
+.col-gauche > .bulle-ammi:first-child, .col-gauche > .resultat:first-child, .col-gauche > .carte:first-child { margin-top: 14px; }
+.col-gauche > .comptoir:first-child { margin: 0 -16px; }
+.seulement-large { display: none !important; }
+.seulement-souris { display: none; }
+@media (hover: hover) and (pointer: fine) { .seulement-souris { display: block; } }
+
+/* Accueil : langue et version */
+.accueil-visuel, .accueil-reglages { display: flex; flex-direction: column; gap: 14px; }
+.langues { display: flex; gap: 8px; }
+.langue { flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid var(--trait-fort); background: #fff; font-weight: 600; cursor: pointer; }
+.langue.pris { border: 2px solid var(--bleu); background: var(--bleu-clair); color: var(--bleu); font-weight: 700; }
+.choix-mode { display: flex; flex-direction: column; gap: 8px; }
+.choix-mode > .petit { margin: 0; }
+.carte-mode { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--trait-fort); background: #fff; text-align: left; cursor: pointer; }
+.carte-mode.pris { border: 2px solid var(--bleu); background: var(--bleu-clair); }
+.icone-mode { display: flex; width: 44px; height: 44px; flex: none; align-items: center; justify-content: center; border-radius: 12px; background: var(--chaux); }
+.texte-mode { display: flex; flex-direction: column; gap: 2px; }
+.texte-mode b { font-size: 15.5px; }
+
+/* Carnet */
+.carnet-corps { padding-bottom: 24px; }
+.lien-version { margin-left: auto; color: #fff; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.compteur span { font-size: 13px; }
+.mini-etoiles { display: flex; margin-left: auto; }
+
+/* Fin de mission, version grand public */
+.score { text-align: center; background: #fff; border: 2px solid var(--safran); border-radius: 16px; padding: 14px; }
+.score p { margin: 0; }
+.score .etoiles { display: flex; justify-content: center; gap: 6px; }
+.score h2 { margin: 6px 0 2px; }
+.boutons-fin { display: flex; gap: 10px; }
+.boutons-fin > * { flex: 1; }
+.boutons-fin .bouton.principal { font-size: 17px; }
+
+/* Survol (souris) */
+@media (hover: hover) {
+  .produit:not(:disabled):hover, .carte-mode:hover, .langue:hover, .horaire:hover, .choix:not(:disabled):hover { border-color: var(--bleu); }
+  .ligne-mission:not(.verrouillee):hover .nom { color: var(--bleu); text-decoration: underline; }
+  .bouton:not(.principal):hover { background: var(--ocre-clair); }
+}
+
+/* Ordinateur et grandes tablettes */
+@media (min-width: 900px) {
+  body { background: #e4dac5; }
+  .app { max-width: 1180px; margin: 24px auto; min-height: calc(100vh - 48px); border-radius: 24px; overflow: hidden; box-shadow: 0 10px 40px rgba(43, 42, 51, .12); }
+  .ecran { min-height: calc(100vh - 48px); }
+  .barre { padding: 14px 28px; }
+  .titres h1 { font-size: 24px; }
+  .seulement-large { display: flex !important; }
+  .seulement-etroit { display: none !important; }
+
+  .accueil { display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 48px; padding: 48px 56px; }
+  .logo { text-align: left; }
+  .logo h1 { font-size: 72px; }
+  .logo-ar { text-align: left; }
+  .accueil .note { text-align: left; }
+
+  .carnet-corps { padding: 0 28px 32px; }
+  .defi { margin: 20px 0 0; }
+  .pistes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start; margin-top: 20px; }
+  .piste { margin: 0; }
+  .piste:last-child { margin-bottom: 0; }
+
+  .mise-en-page { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; padding: 24px 28px 40px; align-items: start; }
+  .col-gauche, .col-droite { padding: 0; }
+  .col-gauche { position: sticky; top: 124px; }
+  .col-gauche > .bulle-ammi:first-child, .col-gauche > .resultat:first-child, .col-gauche > .carte:first-child { margin-top: 0; }
+  .col-gauche > .comptoir:first-child { margin: 0; border-radius: 20px; }
+  .comptoir { height: 440px; }
+  .etageres { height: 400px; }
+  .client { top: 120px; width: 300px; }
+  .bulle-client { top: 20px; left: 20px; right: 20px; padding: 12px 18px; font-size: 16px; }
+  .grille-produits { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .histo { --hmax: 240px; gap: 6px; }
+  .barre-h .n, .barre-h .h { font-size: 12px; }
+  .gros-chiffre { font-size: 56px; }
+}
 
 /* Animations : la vie du quartier */
 @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-2px); } }

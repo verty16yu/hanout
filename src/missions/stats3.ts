@@ -3,119 +3,121 @@ import { trouverMission } from '../contenu/missions';
 import {
   FREQUENTATION, HEURES_OUVERTURE, HORAIRES, Horaire, classeModale, clientsServis, effectifTotal, frequence, meilleurHoraire,
 } from '../economie/histogramme';
+import { lireEtat } from '../etat';
+import { t, tListe } from '../i18n';
 import { barreMission } from '../ui/barre';
-import { brancherDebrief, htmlDebrief } from '../ui/debrief';
+import { FinDeMission, brancherFin, htmlFin, question } from '../ui/debrief';
 import { ammi } from '../ui/dessins';
-import { afficher, echapper } from '../ui/dom';
+import { afficher } from '../ui/dom';
+
+/** Étoiles (grand public) : trouver le meilleur horaire du premier coup vaut 3 étoiles. */
+export function etoilesStats3(essais: number): number {
+  return essais <= 1 ? 3 : essais === 2 ? 2 : 1;
+}
 
 export function missionStats3(racine: HTMLElement): void {
   const mission = trouverMission('stats-3')!;
   const total = effectifTotal();
   const modale = classeModale();
   const max = modale.effectif;
+  const meilleur = meilleurHoraire();
   let classeChoisie: number | null = null;
   let horaire: Horaire | null = null;
-  let debriefAffiche = false;
+  let essais = 0;
+  let finAffichee = false;
 
   function histogramme(): string {
-    return `<div class="histo" role="group" aria-label="Histogramme : clients par classe d’une heure, sur 7 jours">
+    return `<div class="histo" role="group" aria-label="${t('stats3.histo')}">
 ${FREQUENTATION.map((c) => {
   const couvert = horaire ? horaire.heures.includes(c.debut) : false;
-  const choisie = classeChoisie === c.debut;
-  const cls = ['barre-h', couvert ? 'couvert' : '', choisie ? 'choisie' : '', classeChoisie !== null && c === modale ? 'modale' : ''].join(' ');
-  return `<button type="button" class="${cls}" data-action="classe" data-h="${c.debut}" aria-label="De ${c.debut} h à ${c.fin} h : ${c.effectif} clients" ${classeChoisie !== null ? 'disabled' : ''}>
-  <span class="n">${c.effectif}</span><span class="b" style="height:${Math.round((c.effectif / max) * 120)}px"></span><span class="h">${c.debut}</span></button>`;
+  const cls = ['barre-h', couvert ? 'couvert' : '', classeChoisie === c.debut ? 'choisie' : '', classeChoisie !== null && c === modale ? 'modale' : ''].join(' ');
+  return `<button type="button" class="${cls}" data-h="${c.debut}" aria-label="${t('stats3.barre', { a: c.debut, b: c.fin, n: c.effectif })}" ${classeChoisie !== null ? 'disabled' : ''}>
+  <span class="n">${c.effectif}</span><span class="b" style="--r:${(c.effectif / max).toFixed(3)}"></span><span class="h">${c.debut}</span></button>`;
 }).join('')}
-</div><p class="petit legende">Heure de début de chaque classe d’une heure, de 7 h à 21 h. Total : ${total} passages.</p>`;
+</div><p class="petit legende">${t('stats3.legende', { n: total })}</p>`;
   }
 
   function rendre(garderPosition = false): void {
     const etape = classeChoisie === null ? 1 : 2;
     const bonne = classeChoisie === modale.debut;
-    const meilleur = meilleurHoraire();
+    const edu = lireEtat().mode === 'edu';
     afficher(
       racine,
       `<main class="ecran mission">
-${barreMission(mission, `Étape ${etape} / 2`)}
-<div class="contenu">
-  <div class="bulle-ammi">${ammi(40)}<p>${
-    etape === 1
-      ? 'Voici ton cahier de caisse : tous les passages de la semaine, regroupés par tranche d’une heure. D’abord, <b>touche la classe où il y a eu le plus de clients</b>.'
-      : `Tu ne peux ouvrir que <b>${HEURES_OUVERTURE} heures par jour</b>. Lequel de ces horaires sert le plus de clients ?`
-  }</p></div>
-  <section class="carte">${histogramme()}</section>
+${barreMission(mission, t('barre.etape', { a: etape, b: 2 }))}
+<div class="mise-en-page">
+  <div class="col-gauche">
+    <div class="bulle-ammi">${ammi(40)}<p>${etape === 1 ? t(edu ? 'stats3.etape1' : 'stats3.etape1.public') : t('stats3.etape2', { n: HEURES_OUVERTURE })}</p></div>
+    <section class="carte carte-histo">${histogramme()}</section>
+  </div>
+  <div class="col-droite">
   ${
     classeChoisie !== null
-      ? `<p class="issue ${bonne ? 'ok' : 'ko'}" role="status">${
-          bonne
-            ? `Exact : de ${modale.debut} h à ${modale.fin} h, ${modale.effectif} clients, c’est la classe la plus fréquentée.`
-            : `Pas tout à fait : la classe la plus haute est ${modale.debut} h – ${modale.fin} h, avec ${modale.effectif} clients. Elle est entourée sur le graphique.`
-        }</p>
-  <div class="choix-horaires" role="radiogroup" aria-label="Horaires d’ouverture">
-    ${HORAIRES.map(
-      (h) => `<button type="button" role="radio" class="horaire${horaire?.id === h.id ? ' pris' : ''}" aria-checked="${horaire?.id === h.id}" data-action="horaire" data-id="${h.id}">
-      <b>${echapper(h.libelle)}</b><span>${horaire ? `${clientsServis(h)} clients servis sur ${total}` : `${HEURES_OUVERTURE} heures`}</span></button>`,
-    ).join('')}
-  </div>
-  ${
-    horaire
-      ? horaire.id === meilleur.id
-        ? `<p class="issue ok" role="status">Bien vu : ${clientsServis(horaire)} clients sur ${total}. Tu as suivi les deux pics de la journée, le pain du matin et la sortie du travail.</p>
-           ${debriefAffiche ? '' : '<button type="button" class="bouton principal grand" data-action="debrief">Voir le débrief</button>'}`
-        : `<p class="issue ko" role="status">${clientsServis(horaire)} clients sur ${total}. Regarde où sont les barres les plus hautes : ton horaire laisse de côté un des deux pics. Essaie un autre choix.</p>`
-      : ''
-  }`
+      ? `<p class="issue ${bonne ? 'ok' : 'ko'}" role="status">${t(bonne ? 'stats3.bon1' : 'stats3.faux1', { a: modale.debut, b: modale.fin, n: modale.effectif })}</p>
+    <div class="choix-horaires" role="radiogroup" aria-label="${t('stats3.horaires')}">
+      ${HORAIRES.map(
+        (h) => `<button type="button" role="radio" class="horaire${horaire?.id === h.id ? ' pris' : ''}" aria-checked="${horaire?.id === h.id}" data-horaire="${h.id}">
+        <b>${t(`horaire.${h.id}`)}</b><span>${horaire ? t('stats3.servis', { n: clientsServis(h), total }) : t('stats3.heures', { n: HEURES_OUVERTURE })}</span></button>`,
+      ).join('')}
+    </div>
+    ${
+      horaire
+        ? horaire.id === meilleur.id
+          ? `<p class="issue ok" role="status">${t('stats3.bon2', { n: clientsServis(horaire), total })}</p>
+             ${finAffichee ? '' : `<button type="button" class="bouton principal grand" data-action="fin">${t(edu ? 'stats3.voirDebrief' : 'stats3.voirConseil')}</button>`}`
+          : `<p class="issue ko" role="status">${t('stats3.faux2', { n: clientsServis(horaire), total })}</p>`
+        : ''
+    }`
       : ''
   }
-  <div id="zone-debrief"></div>
+    <div id="zone-fin"></div>
+  </div>
 </div>
 </main>`,
       { garderPosition },
     );
-    racine.querySelectorAll<HTMLButtonElement>('[data-action="classe"]').forEach((b) =>
+    racine.querySelectorAll<HTMLButtonElement>('.barre-h').forEach((b) =>
       b.addEventListener('click', () => {
         classeChoisie = Number(b.dataset.h);
         rendre(true);
       }),
     );
-    racine.querySelectorAll<HTMLButtonElement>('[data-action="horaire"]').forEach((b) =>
+    racine.querySelectorAll<HTMLButtonElement>('[data-horaire]').forEach((b) =>
       b.addEventListener('click', () => {
-        horaire = HORAIRES.find((h) => h.id === b.dataset.id) ?? null;
+        const choix = HORAIRES.find((h) => h.id === b.dataset.horaire) ?? null;
+        if (choix && choix.id !== horaire?.id && !finAffichee) essais += 1;
+        horaire = choix;
         rendre(true);
+        racine.querySelector<HTMLElement>(`[data-horaire="${b.dataset.horaire}"]`)?.focus({ preventScroll: true });
       }),
     );
-    racine.querySelector('[data-action="debrief"]')?.addEventListener('click', montrerDebrief);
-    if (debriefAffiche) montrerDebrief();
+    racine.querySelector('[data-action="fin"]')?.addEventListener('click', montrerFin);
+    if (finAffichee) montrerFin();
   }
 
-  function montrerDebrief(): void {
-    debriefAffiche = true;
-    racine.querySelector('[data-action="debrief"]')?.remove();
-    const d = {
+  function montrerFin(): void {
+    finAffichee = true;
+    racine.querySelector('[data-action="fin"]')?.remove();
+    const fin: FinDeMission = {
       missionId: mission.id,
-      titre: 'Lire un histogramme',
-      explication: `L’heure de passage est une <b>variable continue</b> : on la regroupe en <b>classes</b> d’une heure ([7 h ; 8 h[, [8 h ; 9 h[…) et on la représente par un <b>histogramme</b>, avec des barres collées. La <b>classe modale</b> est celle qui a le plus fort effectif : [${modale.debut} h ; ${modale.fin} h[, avec ${modale.effectif} clients sur ${total}, soit ${frequence(modale)} % des passages.`,
-      notions: ['Classes', 'Histogramme', 'Classe modale'],
-      reflexion: 'Avec des classes de deux heures au lieu d’une, trouverais-tu la même classe modale ? Qu’est-ce qu’on perd en regroupant davantage ?',
-      questions: [
-        {
-          question: 'Pourquoi un histogramme pour ces données ?',
-          choix: ['Parce que l’heure est une variable continue regroupée en classes', 'Parce que c’est une variable qualitative', 'Parce qu’il y a plus de dix valeurs', 'Parce que les effectifs sont des nombres entiers'],
-          bonne: 0,
-          explication: 'Le diagramme en barres sert aux variables qualitatives ou discrètes ; l’histogramme aux variables continues en classes.',
-        },
-        {
-          question: 'La classe modale, c’est…',
-          choix: ['La classe qui a l’effectif le plus élevé', 'La classe située au milieu du tableau', 'La classe qui contient la moyenne', 'La dernière classe du tableau'],
-          bonne: 0,
-          explication: 'Ici, [18 h ; 19 h[ avec 52 clients.',
-        },
-      ],
+      titre: t('stats3.debrief.titre'),
+      explication: t('stats3.debrief.texte', { a: modale.debut, b: modale.fin, n: modale.effectif, total, pc: frequence(modale) }),
+      conseil: t('stats3.conseil', { a: modale.debut, b: modale.fin, n: modale.effectif }),
+      notions: tListe('stats3.notions'),
+      reflexion: t('stats3.reflexion'),
+      questions: [question('stats3.q1'), question('stats3.q2')],
+      etoiles: etoilesStats3(essais),
     };
-    const zone = racine.querySelector<HTMLElement>('#zone-debrief');
-    if (!zone) return;
-    zone.innerHTML = htmlDebrief(d);
-    brancherDebrief(racine, d);
+    const zone = racine.querySelector<HTMLElement>('#zone-fin');
+    if (!zone || zone.childElementCount > 0) return;
+    zone.innerHTML = htmlFin(fin);
+    brancherFin(racine, fin, () => {
+      classeChoisie = null;
+      horaire = null;
+      essais = 0;
+      finAffichee = false;
+      rendre();
+    });
   }
 
   rendre();
