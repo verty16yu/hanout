@@ -4,6 +4,7 @@ import {
   FREQUENTATION, HEURES_OUVERTURE, HORAIRES, Horaire, classeModale, clientsServis, effectifTotal, frequence, meilleurHoraire,
 } from '../economie/histogramme';
 import { lireEtat } from '../etat';
+import { chrono, suivre } from '../analyse';
 import { t, tListe } from '../i18n';
 import { barreMission } from '../ui/barre';
 import { FinDeMission, brancherFin, htmlFin, question } from '../ui/debrief';
@@ -25,6 +26,7 @@ export function missionStats3(racine: HTMLElement): void {
   let horaire: Horaire | null = null;
   let essais = 0;
   let finAffichee = false;
+  let duree = chrono();
 
   function histogramme(): string {
     return `<div class="histo" role="group" aria-label="${t('stats3.histo')}">
@@ -79,13 +81,17 @@ ${barreMission(mission, t('barre.etape', { a: etape, b: 2 }))}
     racine.querySelectorAll<HTMLButtonElement>('.barre-h').forEach((b) =>
       b.addEventListener('click', () => {
         classeChoisie = Number(b.dataset.h);
+        suivre('stats3_classe', { heure: classeChoisie, juste: classeChoisie === modale.debut });
         rendre(true);
       }),
     );
     racine.querySelectorAll<HTMLButtonElement>('[data-horaire]').forEach((b) =>
       b.addEventListener('click', () => {
         const choix = HORAIRES.find((h) => h.id === b.dataset.horaire) ?? null;
-        if (choix && choix.id !== horaire?.id && !finAffichee) essais += 1;
+        if (choix && choix.id !== horaire?.id && !finAffichee) {
+          essais += 1;
+          suivre('stats3_horaire', { horaire: choix.id, essai: essais, servis: clientsServis(choix), juste: choix.id === meilleur.id });
+        }
         horaire = choix;
         rendre(true);
         racine.querySelector<HTMLElement>(`[data-horaire="${b.dataset.horaire}"]`)?.focus({ preventScroll: true });
@@ -107,6 +113,7 @@ ${barreMission(mission, t('barre.etape', { a: etape, b: 2 }))}
       reflexion: t('stats3.reflexion'),
       questions: [question('stats3.q1'), question('stats3.q2')],
       etoiles: etoilesStats3(essais),
+      duree: duree(),
     };
     const zone = racine.querySelector<HTMLElement>('#zone-fin');
     if (!zone || zone.childElementCount > 0) return;
@@ -116,6 +123,7 @@ ${barreMission(mission, t('barre.etape', { a: etape, b: 2 }))}
       horaire = null;
       essais = 0;
       finAffichee = false;
+      duree = chrono();
       rendre();
     });
   }

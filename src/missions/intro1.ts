@@ -3,6 +3,7 @@ import { trouverMission } from '../contenu/missions';
 import {
   BUDGET_PREMIER_JOUR, PRODUITS, beneficeTotal, coutOpportunite, coutTotal, demandesNonServies, meilleurPanier, peutAjouter,
 } from '../economie/premierJour';
+import { chrono, suivre } from '../analyse';
 import { t, tListe } from '../i18n';
 import { barreMission } from '../ui/barre';
 import { FinDeMission, brancherFin, htmlFin, question } from '../ui/debrief';
@@ -19,6 +20,7 @@ export function etoilesIntro1(gain: number, meilleur: number): number {
 export function missionIntro1(racine: HTMLElement): void {
   const mission = trouverMission('intro-1')!;
   let choisis: string[] = [];
+  let duree = chrono();
 
   function rendreChoix(garderPosition = false): void {
     const depense = coutTotal(choisis);
@@ -73,6 +75,16 @@ ${barreMission(mission, t('barre.etape', { a: 1, b: 2 }))}
     const meilleur = meilleurPanier();
     const co = coutOpportunite(choisis);
     const manques = demandesNonServies(choisis);
+    suivre('intro1_semaine', {
+      produits: [...choisis].sort(),
+      nb_produits: choisis.length,
+      depense: coutTotal(choisis),
+      gain,
+      meilleur: meilleur.benefice,
+      part_du_meilleur: Math.round((gain / meilleur.benefice) * 100),
+      panier_optimal: [...choisis].sort().join(',') === [...meilleur.ids].sort().join(','),
+      renonce_a: co ? co.produit.id : null,
+    });
     const fin: FinDeMission = {
       missionId: mission.id,
       titre: t('intro1.debrief.titre'),
@@ -88,6 +100,7 @@ ${barreMission(mission, t('barre.etape', { a: 1, b: 2 }))}
       reflexion: t('intro1.reflexion'),
       questions: [question('intro1.q1'), question('intro1.q2')],
       etoiles: etoilesIntro1(gain, meilleur.benefice),
+      duree: duree(),
     };
     afficher(
       racine,
@@ -113,6 +126,7 @@ ${barreMission(mission, t('barre.etape', { a: 2, b: 2 }))}
     );
     brancherFin(racine, fin, () => {
       choisis = [];
+      duree = chrono();
       rendreChoix();
     });
   }

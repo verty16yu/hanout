@@ -3,7 +3,10 @@ import './style.css';
 import { trouverMission } from './contenu/missions';
 import { ecranAccueil } from './ecrans/accueil';
 import { ecranCarnet } from './ecrans/carnet';
+import { demarrerMesure, suivre } from './analyse';
+import { ecranConfidentialite } from './ecrans/confidentialite';
 import { lireEtat } from './etat';
+import { afficherBandeau } from './ui/bandeau';
 import { t } from './i18n';
 import { missionIntro1 } from './missions/intro1';
 import { missionMicro4 } from './missions/micro4';
@@ -24,10 +27,20 @@ function router(): void {
   document.body.dataset.mode = e.mode;
   const chemin = location.hash.replace(/^#/, '') || '/';
   const [, page, id] = chemin.split('/');
-  if (page === 'carnet') return ecranCarnet(racine);
-  if (page === 'mission' && id && MISSIONS_JOUABLES[id] && trouverMission(id)) return MISSIONS_JOUABLES[id](racine);
+  afficherBandeau();
+  if (page === 'carnet') {
+    suivre('ecran_vu', { ecran: 'carnet' });
+    return ecranCarnet(racine);
+  }
+  if (page === 'confidentialite') return ecranConfidentialite(racine);
+  if (page === 'mission' && id && MISSIONS_JOUABLES[id] && trouverMission(id)) {
+    suivre('mission_commencee', { mission: id });
+    return MISSIONS_JOUABLES[id](racine);
+  }
+  suivre('ecran_vu', { ecran: 'accueil' });
   ecranAccueil(racine);
 }
 
 window.addEventListener('hashchange', router);
+void demarrerMesure();
 router();

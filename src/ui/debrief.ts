@@ -2,6 +2,7 @@
 // Version éducative : débrief d'Ammi Rabah (notions, question de réflexion, quiz, badge).
 // Version grand public : conseil d'Ammi Rabah, étoiles selon la performance, rejouer.
 
+import { suivre } from '../analyse';
 import { enregistrerEtoiles, gagnerBadge, lireEtat } from '../etat';
 import { t, tListe } from '../i18n';
 import { ammi, icone } from './dessins';
@@ -27,6 +28,8 @@ export interface FinDeMission {
   questions: QuestionCours[];
   /** Étoiles obtenues (1 à 3), pour la version grand public. */
   etoiles: number;
+  /** Durée de la mission en secondes (mesure d'audience). */
+  duree?: number;
 }
 
 function htmlEdu(d: FinDeMission): string {
@@ -80,11 +83,17 @@ export function htmlFin(d: FinDeMission): string {
 export function brancherFin(racine: HTMLElement, d: FinDeMission, rejouer: () => void): void {
   const zone = racine.querySelector<HTMLElement>('.debrief');
   if (!zone) return;
+  const n = Math.max(1, Math.min(3, d.etoiles));
+  suivre('mission_terminee', { mission: d.missionId, duree_s: d.duree ?? null, etoiles: lireEtat().mode === 'public' ? n : null });
   if (lireEtat().mode === 'public') {
-    enregistrerEtoiles(d.missionId, Math.max(1, Math.min(3, d.etoiles)));
-    zone.querySelector('[data-action="rejouer"]')?.addEventListener('click', rejouer);
+    enregistrerEtoiles(d.missionId, n);
+    zone.querySelector('[data-action="rejouer"]')?.addEventListener('click', () => {
+      suivre('mission_rejouee', { mission: d.missionId, etoiles: n });
+      rejouer();
+    });
   } else {
     const justes = new Set<number>();
+    const tentatives = d.questions.map(() => 0);
     zone.querySelectorAll<HTMLButtonElement>('.choix').forEach((b) => {
       b.addEventListener('click', () => {
         const qi = Number(b.dataset.q);
@@ -92,6 +101,8 @@ export function brancherFin(racine: HTMLElement, d: FinDeMission, rejouer: () =>
         const q = d.questions[qi];
         const bloc = zone.querySelector<HTMLElement>(`[data-question="${qi}"]`)!;
         const retour = bloc.querySelector<HTMLElement>('.quiz-retour')!;
+        tentatives[qi] += 1;
+        suivre('quiz_reponse', { mission: d.missionId, question: qi + 1, juste: ci === q.bonne, tentative: tentatives[qi], reponse: q.choix[ci] });
         if (ci === q.bonne) {
           b.classList.add('juste');
           bloc.querySelectorAll<HTMLButtonElement>('.choix').forEach((x) => (x.disabled = true));
@@ -106,6 +117,7 @@ export function brancherFin(racine: HTMLElement, d: FinDeMission, rejouer: () =>
         }
         if (justes.size === d.questions.length) {
           gagnerBadge(d.missionId);
+          suivre('badge_gagne', { mission: d.missionId, sans_erreur: tentatives.every((x) => x === 1) });
           const badge = zone.querySelector<HTMLElement>('.badge-gagne')!;
           badge.hidden = false;
           badge.scrollIntoView({ behavior: 'smooth', block: 'center' });

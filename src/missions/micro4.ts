@@ -3,6 +3,7 @@
 import { trouverMission } from '../contenu/missions';
 import { CLIENTS_COMPTOIR, PATIENCE_INITIALE, Reaction, Vente, Visage, bilan, reagir, surplusProducteurMax } from '../economie/comptoir';
 import { lireEtat } from '../etat';
+import { chrono, suivre } from '../analyse';
 import { t, tListe } from '../i18n';
 import { barreMission } from '../ui/barre';
 import { FinDeMission, brancherFin, htmlFin, question } from '../ui/debrief';
@@ -20,6 +21,7 @@ export function missionMicro4(racine: HTMLElement): void {
   const mission = trouverMission('micro-4')!;
   let ventes: Vente[] = [];
   let index = 0;
+  let duree = chrono();
 
   function servir(): void {
     const client = CLIENTS_COMPTOIR[index];
@@ -29,9 +31,19 @@ export function missionMicro4(racine: HTMLElement): void {
     let visage: Visage = 'neutre';
     let message = t(`client.${client.id}.accueil`);
     let termine: Reaction['issue'] | null = null;
+    let essai = 0;
 
     function proposer(): void {
       const r = reagir(client, offre, patience);
+      essai += 1;
+      suivre('micro4_offre', {
+        client: client.id,
+        essai,
+        prix: offre,
+        disposition_a_payer: client.dispositionAPayer,
+        ecart_pct: Math.round(((offre - client.dispositionAPayer) / client.dispositionAPayer) * 100),
+        issue: r.issue,
+      });
       patience = r.patienceRestante;
       visage = r.visage;
       message = t(r.message);
@@ -108,6 +120,12 @@ ${barreMission(mission, t('barre.client', { a: index + 1, b: CLIENTS_COMPTOIR.le
   function rendreBilan(): void {
     const b = bilan(ventes);
     const maxProd = surplusProducteurMax();
+    suivre('micro4_bilan', {
+      surplus_producteur: Math.round(b.producteur * 100) / 100,
+      surplus_consommateur: Math.round(b.consommateur * 100) / 100,
+      part_du_max: Math.round((b.producteur / maxProd) * 100),
+      departs: ventes.filter((v) => v.prix === null).length,
+    });
     const fin: FinDeMission = {
       missionId: mission.id,
       titre: t('micro4.debrief.titre'),
@@ -117,6 +135,7 @@ ${barreMission(mission, t('barre.client', { a: index + 1, b: CLIENTS_COMPTOIR.le
       reflexion: t('micro4.reflexion'),
       questions: [question('micro4.q1', t('micro4.q1.e', { a: prix(8.5), b: prix(7), c: prix(1.5) })), question('micro4.q2')],
       etoiles: etoilesMicro4(b.producteur, maxProd),
+      duree: duree(),
     };
     const edu = lireEtat().mode === 'edu';
     afficher(
@@ -145,6 +164,7 @@ ${barreMission(mission, t('barre.bilan'))}
     brancherFin(racine, fin, () => {
       ventes = [];
       index = 0;
+      duree = chrono();
       servir();
     });
   }

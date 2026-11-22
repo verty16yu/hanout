@@ -53,6 +53,7 @@ export function ecranCarnet(racine: HTMLElement): void {
     <div class="defi">${icone('trophee', '#fff', 22)}<p><span class="petit">${t('carnet.defi.petit')}</span><b>${t(edu ? 'carnet.defi.edu' : 'carnet.defi.public')}</b></p>
       <a class="lien-version" href="#/">${t('carnet.version', { v: t(edu ? 'mode.edu.titre' : 'mode.public.titre') })}</a></div>
     <div class="pistes">${pistes}</div>
+    <p class="note pied"><a href="#/confidentialite">${t('conf.lien')}</a></p>
   </div>
 </main>`,
   );

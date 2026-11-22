@@ -43,7 +43,9 @@ h1:focus, h2:focus { outline: none; }
 
 /* Accueil */
 .accueil { gap: 14px; padding: 32px 20px 24px; }
-.logo { text-align: center; }
+.logo { display: grid; grid-template-columns: auto auto; justify-content: center; align-items: center; column-gap: 14px; text-align: left; }
+.logo .slogan { grid-column: 1 / -1; text-align: center; }
+.logo-icone { display: block; border-radius: 18px; }
 .logo h1 { margin: 0; font-family: var(--titre); font-size: 56px; line-height: 1; color: var(--bleu); }
 .logo-ar { margin: 0; font-family: var(--titre); font-size: 26px; font-weight: 700; color: var(--ocre); }
 .slogan { margin: 2px 0 0; color: var(--gris); }
@@ -235,7 +237,8 @@ h1:focus, h2:focus { outline: none; }
   .seulement-etroit { display: none !important; }
 
   .accueil { display: grid; grid-template-columns: 1.15fr 1fr; align-items: center; gap: 48px; padding: 48px 56px; }
-  .logo { text-align: left; }
+  .logo { justify-content: start; }
+  .logo .slogan { text-align: left; }
   .logo h1 { font-size: 72px; }
   .logo-ar { text-align: left; }
   .accueil .note { text-align: left; }
@@ -260,6 +263,19 @@ h1:focus, h2:focus { outline: none; }
   .barre-h .n, .barre-h .h { font-size: 12px; }
   .gros-chiffre { font-size: 56px; }
 }
+
+/* Bandeau de consentement et page Confidentialité */
+.bandeau { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 20; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 18px; background: #fff; border: 1px solid var(--trait-fort); box-shadow: 0 8px 30px rgba(43, 42, 51, .18); font-size: 14px; }
+.bandeau p { margin: 0; }
+.bandeau-boutons { display: flex; gap: 10px; }
+.bandeau-boutons .bouton { flex: 1; min-height: 44px; }
+.bandeau-boutons .bouton.principal { font-size: 17px; }
+.texte-long { max-width: 720px; padding: 8px 16px 40px; }
+.texte-long h2 { margin: 22px 0 6px; font-family: var(--titre); font-size: 20px; }
+.texte-long ul { padding-left: 20px; }
+.texte-long li { padding: 2px 0; }
+.texte-long .carte { margin: 8px 0 12px; }
+.pied { margin-top: 16px; }
 
 /* Animations : la vie du quartier */
 @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-2px); } }

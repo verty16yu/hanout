@@ -27,6 +27,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+        env:
+          # Clé publique du projet PostHog (variable du dépôt). Vide : aucune mesure, pas de bandeau.
+          VITE_POSTHOG_KEY: ${{ vars.POSTHOG_KEY }}
       - name: Publier sur la branche gh-pages
         run: |
           cd dist

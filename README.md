@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/logo.svg" alt="Logo de Hanout" width="120"></p>
+
 # Hanout · حانوت
 
 **Du quartier au monde.** Hanout est un jeu éducatif de gestion : tu tiens un *hanout*, l’épicerie de quartier, et tu apprends l’économie en prenant de vraies décisions de commerçant.

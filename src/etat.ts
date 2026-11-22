@@ -13,6 +13,8 @@ export interface EtatJoueur {
   badges: string[];
   /** Version grand public : meilleur nombre d'étoiles (1 à 3) par mission. */
   etoiles: Record<string, number>;
+  /** Accord pour la mesure d'audience anonyme : null tant que le joueur n'a pas répondu. */
+  consentement: 'oui' | 'non' | null;
 }
 
 const CLE = 'hanout.etat.v1';
@@ -26,7 +28,7 @@ function langueParDefaut(): 'fr' | 'en' {
 }
 
 function neuf(): EtatJoueur {
-  return { villeId: villeParDefaut().id, langue: langueParDefaut(), mode: 'edu', badges: [], etoiles: {} };
+  return { villeId: villeParDefaut().id, langue: langueParDefaut(), mode: 'edu', badges: [], etoiles: {}, consentement: null };
 }
 
 function charger(): EtatJoueur {
@@ -41,6 +43,7 @@ function charger(): EtatJoueur {
         mode: lu.mode === 'public' ? 'public' : 'edu',
         badges: Array.isArray(lu.badges) ? lu.badges : [],
         etoiles: lu.etoiles && typeof lu.etoiles === 'object' ? lu.etoiles : {},
+        consentement: lu.consentement === 'oui' || lu.consentement === 'non' ? lu.consentement : null,
       };
     }
   } catch {
@@ -105,4 +108,8 @@ export function etoiles(missionId: string): number {
 /** Mission terminée dans la version en cours (badge en éducatif, au moins une étoile en grand public). */
 export function missionReussie(missionId: string): boolean {
   return etat.mode === 'edu' ? aLeBadge(missionId) : etoiles(missionId) > 0;
+}
+
+export function changerConsentement(valeur: 'oui' | 'non'): void {
+  modifier({ consentement: valeur });
 }
