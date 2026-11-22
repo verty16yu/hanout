@@ -6,8 +6,8 @@ La mesure est **anonyme** et **désactivée par défaut** : rien n'est chargé n
 
 1. Créer un compte gratuit sur PostHog (région **EU**) et un projet « Hanout ».
 2. Copier la **clé publique du projet** (elle commence par `phc_`).
-3. Dans le dépôt GitHub : *Settings › Secrets and variables › Actions › Variables* → nouvelle variable `POSTHOG_KEY` avec cette clé.
-4. Relancer la publication : le bandeau de consentement apparaît alors dans le jeu.
+3. La clé est écrite dans `src/config.ts` (elle est publique par nature : elle permet d'envoyer des événements, pas de lire les données). On peut la remplacer sans toucher au code avec la variable de dépôt `POSTHOG_KEY`.
+4. À la publication, le bandeau de consentement apparaît dans le jeu.
 5. Dans PostHog, réglages du projet : activer l'anonymisation des adresses IP.
 
 ## Propriétés envoyées avec chaque événement
