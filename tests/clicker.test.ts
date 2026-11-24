@@ -3,6 +3,10 @@ import {
   ABSENCE_MAX_S,
   AMELIORATIONS,
   MARGE_DE_BASE,
+  PLAFOND_LIVRET,
+  deposer,
+  interets,
+  retirer,
   acheter,
   avancer,
   boutiqueNeuve,
@@ -75,5 +79,38 @@ describe('Mon hanout (jeu incrémental)', () => {
     expect(delaiRecuperation(frigo, 0)).toBeCloseTo(60);
     expect(delaiRecuperation(cousin, 2)).toBeGreaterThan(delaiRecuperation(cousin, 0));
     for (const a of AMELIORATIONS) expect(delaiRecuperation(a, 0)).toBeLessThan(200);
+  });
+
+  it('le livret rapporte des intérêts composés, sans dépasser le plafond', () => {
+    // 0,5 % par minute composé : +5,11 % en 10 minutes, pas +5 %
+    expect(interets(100, 600)).toBeCloseTo(100 * (Math.pow(1.005, 10) - 1));
+    expect(interets(100, 600)).toBeGreaterThan(5);
+    expect(interets(PLAFOND_LIVRET - 1, 3600)).toBeCloseTo(1);
+    expect(interets(PLAFOND_LIVRET, 3600)).toBe(0);
+    expect(interets(0, 3600)).toBe(0);
+  });
+
+  it('dépôt et retrait passent entre la caisse et le livret', () => {
+    const e = { ...boutiqueNeuve(0), caisse: 50 };
+    const place = deposer(e, 30)!;
+    expect(place.caisse).toBeCloseTo(20);
+    expect(place.livret).toBeCloseTo(30);
+    expect(deposer(place, 999)!.livret).toBeCloseTo(50); // pas plus que la caisse
+    expect(deposer({ ...e, caisse: 5000 }, 5000)!.livret).toBe(PLAFOND_LIVRET); // pas plus que le plafond
+    expect(deposer(boutiqueNeuve(0), 10)).toBeNull();
+    const repris = retirer(place, 999)!;
+    expect(repris.caisse).toBeCloseTo(50);
+    expect(repris.livret).toBe(0);
+    expect(retirer(boutiqueNeuve(0), 10)).toBeNull();
+  });
+
+  it("le livret travaille pendant le jeu et pendant l'absence, et compte dans le total", () => {
+    const e = { ...boutiqueNeuve(0), livret: 200 };
+    const apres = avancer(e, 60);
+    expect(apres.livret).toBeCloseTo(201);
+    expect(apres.total).toBeCloseTo(1);
+    const absent = gainsAbsence(e, 60_000);
+    expect(absent.interets).toBeCloseTo(1);
+    expect(absent.gain).toBe(0);
   });
 });

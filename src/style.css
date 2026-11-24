@@ -309,6 +309,13 @@ h1:focus, h2:focus { outline: none; }
 .amelio .acheter { grid-column: 1 / -1; min-height: 44px; font-size: 15px; }
 .amelio .acheter:not(:disabled) { background: var(--ocre); border-color: var(--ocre); color: #fff; }
 .amelio.mystere { background: transparent; border-style: dashed; }
+.livret { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; padding: 12px; border-radius: 16px; background: var(--bleu-clair); border: 1px solid #c9dcec; }
+.livret-tete { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: start; }
+.livret-solde { display: flex; justify-content: space-between; align-items: baseline; margin: 0; padding: 8px 12px; border-radius: 12px; background: #fff; }
+.livret-solde b { font-family: var(--titre); font-size: 20px; color: var(--bleu); font-variant-numeric: tabular-nums; }
+.livret-plein { margin: 0; color: var(--brique); font-weight: 700; }
+.livret-boutons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.livret-boutons .bouton { min-height: 44px; padding: 0 6px; font-size: 13.5px; border-color: var(--bleu); color: var(--bleu); background: #fff; }
 @media (min-width: 900px) {
   .hanout-corps { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; padding: 24px 28px 40px; align-items: start; }
   .hanout-boutique { position: sticky; top: 96px; }

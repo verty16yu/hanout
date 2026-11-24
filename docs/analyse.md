@@ -35,6 +35,7 @@ La mesure est **anonyme** et **désactivée par défaut** : rien n'est chargé n
 | `stats3_classe` | `heure`, `juste` | Savent-ils repérer la classe modale ? |
 | `stats3_horaire` | `horaire`, `essai`, `servis`, `juste` | Savent-ils lire un histogramme pour décider ? |
 | `hanout_achat` | `amelioration`, `niveau`, `caisse_totale`, `missions_reussies` | Mon hanout : quelles améliorations sont achetées, et à quel moment de la progression |
+| `hanout_livret` | `action` (`depot`, `retrait`), `montant`, `livret` | Les joueurs épargnent-ils, ou dépensent-ils tout en améliorations ? |
 | `hanout_quitte` | `duree_s`, `clients`, `achats`, `revenu_par_s`, `gain_absence` | Temps passé dans Mon hanout, et s'il donne envie de revenir |
 | `reglage_change` | `reglage`, `valeur` | Changements de langue, de version, de ville |
 | `consentement_accepte`, `consentement_retire` | — | Suivi des accords |

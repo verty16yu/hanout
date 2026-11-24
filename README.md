@@ -30,9 +30,9 @@ Une mission dure 5 à 10 minutes et se joue toujours en quatre temps :
 
 ## Mon hanout
 
-Entre deux missions, ta boutique tourne toute seule, comme dans un jeu incrémental : tu sers des clients d’un geste, tu encaisses, puis tu achètes des améliorations (une étagère, le cousin au comptoir, un frigo à boissons, le pain du boulanger, un vélo de livraison). Chaque mission réussie ajoute 25 % à tous les gains, et la boutique continue à moitié régime pendant ton absence (8 heures au plus).
+Entre deux missions, ta boutique tourne toute seule, comme dans un jeu incrémental : tu sers des clients d’un geste, tu encaisses, puis tu achètes des améliorations (une étagère, le cousin au comptoir, un frigo à boissons, le pain du boulanger, un vélo de livraison). Un livret d’épargne rapporte des intérêts composés (0,5 % par minute, jusqu’à un plafond). Chaque mission réussie ajoute 25 % à tous les gains, et la boutique continue à moitié régime pendant ton absence (8 heures au plus).
 
-En version éducative, chaque amélioration montre la notion qu’elle illustre : recette marginale, rendements marginaux décroissants, investissement et délai de récupération, spécialisation et échange, taille du marché.
+En version éducative, chaque amélioration montre la notion qu’elle illustre : recette marginale, rendements marginaux décroissants, investissement et délai de récupération, spécialisation et échange, taille du marché ; et le livret, épargne et intérêts composés.
 
 ## Les missions du prototype
 

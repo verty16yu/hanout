@@ -23,6 +23,7 @@ export function chargerBoutique(maintenant = Date.now()): EtatBoutique {
         total: nombre(lu.total),
         clients: Math.floor(nombre(lu.clients)),
         niveaux,
+        livret: nombre(lu.livret),
         // une date dans le futur (horloge changée) ne donne aucun gain d'absence
         vu: Math.min(nombre(lu.vu, maintenant), maintenant),
       };

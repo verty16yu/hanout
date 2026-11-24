@@ -27,6 +27,12 @@ export const BONUS_PAR_MISSION = 0.25;
 export const TAUX_ABSENCE = 0.5;
 export const ABSENCE_MAX_S = 8 * 3600;
 
+/** Livret d'épargne : 0,5 % d'intérêts par minute, composés, jusqu'à un plafond (comme un vrai livret). */
+export const TAUX_LIVRET_MIN = 0.005;
+export const PLAFOND_LIVRET = 1000;
+/** Le livret apparaît quand la boutique a gagné ce montant. */
+export const SEUIL_LIVRET = 100;
+
 export const AMELIORATIONS: Amelioration[] = [
   { id: 'etagere', type: 'clic', coutBase: 5, effet: 0.25, decroissance: 1 },
   { id: 'cousin', type: 'auto', coutBase: 12, effet: 0.2, decroissance: 0.85 },
@@ -44,12 +50,14 @@ export interface EtatBoutique {
   clients: number;
   /** Nombre d'exemplaires achetés pour chaque amélioration. */
   niveaux: Record<string, number>;
+  /** Argent placé sur le livret d'épargne. */
+  livret: number;
   /** Dernier passage du joueur (millisecondes), pour les gains pendant l'absence. */
   vu: number;
 }
 
 export function boutiqueNeuve(maintenant: number): EtatBoutique {
-  return { caisse: 0, total: 0, clients: 0, niveaux: {}, vu: maintenant };
+  return { caisse: 0, total: 0, clients: 0, niveaux: {}, livret: 0, vu: maintenant };
 }
 
 export function trouverAmelioration(id: string): Amelioration | undefined {
@@ -101,10 +109,36 @@ export function servir(etat: EtatBoutique, mult = 1): EtatBoutique {
   return { ...encaisser(etat, gainParClient(etat, mult)), clients: etat.clients + 1 };
 }
 
+/** Intérêts composés gagnés par le livret en `secondes`, sans dépasser le plafond. */
+export function interets(solde: number, secondes: number): number {
+  if (solde <= 0 || secondes <= 0 || solde >= PLAFOND_LIVRET) return 0;
+  const apres = solde * Math.pow(1 + TAUX_LIVRET_MIN, secondes / 60);
+  return Math.min(PLAFOND_LIVRET, apres) - solde;
+}
+
+function faireFructifier(etat: EtatBoutique, secondes: number): EtatBoutique {
+  const gain = interets(etat.livret, secondes);
+  return gain > 0 ? { ...etat, livret: etat.livret + gain, total: etat.total + gain } : etat;
+}
+
 /** Le temps passe pendant que le joueur regarde la boutique. */
 export function avancer(etat: EtatBoutique, secondes: number, mult = 1): EtatBoutique {
   if (secondes <= 0) return etat;
-  return encaisser(etat, revenuParSeconde(etat, mult) * secondes);
+  return faireFructifier(encaisser(etat, revenuParSeconde(etat, mult) * secondes), secondes);
+}
+
+/** Place de l'argent de la caisse sur le livret (au plus ce que permet le plafond). */
+export function deposer(etat: EtatBoutique, montant: number): EtatBoutique | null {
+  const place = Math.min(montant, etat.caisse, PLAFOND_LIVRET - etat.livret);
+  if (!(place > 1e-9)) return null;
+  return { ...etat, caisse: etat.caisse - place, livret: etat.livret + place };
+}
+
+/** Reprend de l'argent du livret vers la caisse. */
+export function retirer(etat: EtatBoutique, montant: number): EtatBoutique | null {
+  const repris = Math.min(montant, etat.livret);
+  if (!(repris > 1e-9)) return null;
+  return { ...etat, caisse: etat.caisse + repris, livret: etat.livret - repris };
 }
 
 /** Achète un exemplaire de plus. Renvoie null si la caisse ne suffit pas. */
@@ -117,11 +151,16 @@ export function acheter(etat: EtatBoutique, id: string): EtatBoutique | null {
   return { ...etat, caisse: Math.max(0, etat.caisse - prix), niveaux: { ...etat.niveaux, [id]: n + 1 } };
 }
 
-/** Gains pendant l'absence du joueur (moitié régime, 8 heures au plus). */
-export function gainsAbsence(etat: EtatBoutique, maintenant: number, mult = 1): { etat: EtatBoutique; gain: number; secondes: number } {
+/** Gains pendant l'absence du joueur : boutique à moitié régime, livret à plein taux, 8 heures au plus. */
+export function gainsAbsence(
+  etat: EtatBoutique,
+  maintenant: number,
+  mult = 1,
+): { etat: EtatBoutique; gain: number; interets: number; secondes: number } {
   const secondes = Math.min(ABSENCE_MAX_S, Math.max(0, (maintenant - etat.vu) / 1000));
   const gain = revenuParSeconde(etat, mult) * secondes * TAUX_ABSENCE;
-  return { etat: { ...encaisser(etat, gain), vu: maintenant }, gain, secondes };
+  const avecInterets = faireFructifier(encaisser(etat, gain), secondes);
+  return { etat: { ...avecInterets, vu: maintenant }, gain, interets: avecInterets.livret - etat.livret, secondes };
 }
 
 /**

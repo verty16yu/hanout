@@ -6,6 +6,11 @@ import { chargerBoutique, missionsReussies, multiplicateur, sauverBoutique } fro
 import {
   AMELIORATIONS,
   Amelioration,
+  PLAFOND_LIVRET,
+  SEUIL_LIVRET,
+  deposer,
+  interets,
+  retirer,
   EtatBoutique,
   acheter,
   avancer,
@@ -40,6 +45,15 @@ function visible(a: Amelioration, e: EtatBoutique): boolean {
   return niveau(e, a.id) > 0 || e.total >= a.coutBase * SEUIL_DEVOILEMENT;
 }
 
+function livretVisible(e: EtatBoutique): boolean {
+  return e.livret > 0 || e.total >= SEUIL_LIVRET;
+}
+
+/** Nombre d'éléments dévoilés (améliorations et livret), pour savoir quand redessiner. */
+function devoiles(e: EtatBoutique): number {
+  return AMELIORATIONS.filter((a) => visible(a, e)).length + (livretVisible(e) ? 1 : 0);
+}
+
 function nombre(n: number): string {
   return Math.floor(n).toLocaleString(langue() === 'en' ? 'en-GB' : 'fr-FR').replace(/[  ]/g, ' ');
 }
@@ -54,8 +68,9 @@ export function ecranHanout(racine: HTMLElement): void {
   sauverBoutique(etat);
   let clientsSession = 0;
   let achatsSession = 0;
-  let nbVisibles = AMELIORATIONS.filter((a) => visible(a, etat)).length;
+  let nbVisibles = devoiles(etat);
   let message = absence.gain > 0.005 ? t('hanout.absence', { montant: prix(absence.gain) }) : '';
+  if (absence.interets > 0.005) message = (message || t('hanout.absence', { montant: prix(0) })) + t('hanout.absence.interets', { montant: prix(absence.interets) });
 
   const ligneAmelioration = (a: Amelioration): string => {
     const n = niveau(etat, a.id);
@@ -87,6 +102,31 @@ export function ecranHanout(racine: HTMLElement): void {
   <svg class="vignette" viewBox="0 0 48 48" width="44" height="44" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#E6DCC6"/><text x="24" y="32" text-anchor="middle" font-size="24" font-weight="700" fill="#9A93A0">?</text></svg>
   <div class="amelio-texte"><b>${t('hanout.mystere')}</b><span class="petit">${echapper(t('hanout.mystere.sous', { prix: prix(a.coutBase * SEUIL_DEVOILEMENT) }))}</span></div>
 </li>`;
+
+  const carteLivret = (): string => {
+    if (!livretVisible(etat)) return '';
+    const plein = etat.livret >= PLAFOND_LIVRET - 1e-6;
+    const details = edu
+      ? `<span class="notion-puce">${echapper(t('livret.notion'))}</span><span class="petit">${echapper(t('livret.explication'))}</span><span class="petit recup" data-livret-projection>${echapper(t('livret.projection', { montant: prix(etat.livret + interets(etat.livret, 600)) }))}</span>`
+      : `<span class="petit">${echapper(t('livret.blague'))}</span>`;
+    return `<div class="livret">
+  <div class="livret-tete">
+    <svg class="vignette" viewBox="0 0 48 48" width="44" height="44" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#E3EFF8"/><rect x="11" y="9" width="26" height="31" rx="3" fill="#1E6FA8"/><rect x="15" y="14" width="18" height="5" rx="1.5" fill="#F2B632"/><path d="M16 26h16M16 31h11" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="amelio-texte">
+      <b>${t('livret.titre')}</b>
+      <span class="petit">${echapper(t('livret.taux', { plafond: prix(PLAFOND_LIVRET) }))}</span>
+      ${details}
+    </div>
+  </div>
+  <p class="livret-solde"><span>${t('livret.solde')}</span><b data-livret>${echapper(prix(etat.livret))}</b></p>
+  ${plein ? `<p class="petit livret-plein">${t('livret.plein')}</p>` : ''}
+  <div class="livret-boutons">
+    <button type="button" class="bouton" data-livret-action="moitie">${t('livret.deposerMoitie')}</button>
+    <button type="button" class="bouton" data-livret-action="tout">${t('livret.toutDeposer')}</button>
+    <button type="button" class="bouton" data-livret-action="retirer">${t('livret.toutRetirer')}</button>
+  </div>
+</div>`;
+  };
 
   const listeAmeliorations = (): string => {
     const vues = AMELIORATIONS.filter((a) => visible(a, etat));
@@ -126,6 +166,7 @@ export function ecranHanout(racine: HTMLElement): void {
       <a class="bouton" href="#/carnet">${t(edu ? 'hanout.missions.edu' : 'hanout.missions.public')}</a>
     </section>
     <section class="hanout-ameliorations" aria-labelledby="titre-amelios">
+      ${carteLivret()}
       <h2 id="titre-amelios">${t('hanout.ameliorations')}</h2>
       <ul class="liste-amelios">${listeAmeliorations()}</ul>
       <p class="sr" role="status" data-annonce></p>
@@ -135,6 +176,8 @@ export function ecranHanout(racine: HTMLElement): void {
       { garderPosition: garder },
     );
     brancher();
+    brancherLivret();
+    rafraichir();
     if (focusId) racine.querySelector<HTMLElement>(`[data-acheter="${focusId}"]`)?.focus({ preventScroll: true });
   }
 
@@ -148,6 +191,14 @@ export function ecranHanout(racine: HTMLElement): void {
     if (clients) clients.textContent = t('hanout.clients', { n: nombre(etat.clients) });
     racine.querySelectorAll<HTMLButtonElement>('[data-acheter]').forEach((b) => {
       b.disabled = etat.caisse + 1e-9 < Number(b.dataset.prix);
+    });
+    const livret = racine.querySelector<HTMLElement>('[data-livret]');
+    if (livret) livret.textContent = prix(etat.livret);
+    const projection = racine.querySelector<HTMLElement>('[data-livret-projection]');
+    if (projection) projection.textContent = t('livret.projection', { montant: prix(etat.livret + interets(etat.livret, 600)) });
+    racine.querySelectorAll<HTMLButtonElement>('[data-livret-action]').forEach((b) => {
+      const depot = b.dataset.livretAction !== 'retirer';
+      b.disabled = depot ? etat.caisse < 0.005 || etat.livret >= PLAFOND_LIVRET - 1e-6 : etat.livret < 0.005;
     });
   }
 
@@ -188,7 +239,7 @@ export function ecranHanout(racine: HTMLElement): void {
         sauverBoutique(etat);
         suivre('hanout_achat', { amelioration: id, niveau: niveau(etat, id), caisse_totale: Math.round(etat.total * 100) / 100, missions_reussies: nbMissions });
         message = '';
-        nbVisibles = AMELIORATIONS.filter((a) => visible(a, etat)).length;
+        nbVisibles = devoiles(etat);
         rendre(id);
         const annonce = racine.querySelector<HTMLElement>('[data-annonce]');
         if (annonce) annonce.textContent = t('hanout.achete', { nom: t(`amelio.${id}.nom`) });
@@ -196,8 +247,27 @@ export function ecranHanout(racine: HTMLElement): void {
     );
   }
 
+  function brancherLivret(): void {
+    racine.querySelectorAll<HTMLButtonElement>('[data-livret-action]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const action = b.dataset.livretAction ?? '';
+        const avant = etat.livret;
+        const apres =
+          action === 'retirer' ? retirer(etat, etat.livret) : deposer(etat, action === 'moitie' ? etat.caisse / 2 : etat.caisse);
+        if (!apres) return;
+        etat = apres;
+        sauverBoutique(etat);
+        suivre('hanout_livret', { action: action === 'retirer' ? 'retrait' : 'depot', montant: Math.round(Math.abs(etat.livret - avant) * 100) / 100, livret: Math.round(etat.livret * 100) / 100 });
+        rendre(undefined, true);
+        racine.querySelector<HTMLElement>(`[data-livret-action="${action}"]`)?.focus({ preventScroll: true });
+        const annonce = racine.querySelector<HTMLElement>('[data-annonce]');
+        if (annonce) annonce.textContent = t('livret.annonce', { montant: prix(etat.livret) });
+      }),
+    );
+  }
+
   function verifierDevoilement(): void {
-    const n = AMELIORATIONS.filter((a) => visible(a, etat)).length;
+    const n = devoiles(etat);
     if (n !== nbVisibles) {
       nbVisibles = n;
       const actif = document.activeElement as HTMLElement | null;
