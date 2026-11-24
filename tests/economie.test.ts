@@ -23,6 +23,11 @@ describe('Intro 1 — Le premier jour (rareté et coût d’opportunité)', () =
     expect(best.benefice).toBe(340); // pain, lait, café, bonbons, jus : 480 de coût
   });
 
+  it('le meilleur panier est le haut du classement bénéfice / coût (ce que dit le débrief)', () => {
+    const classes = [...PRODUITS].sort((a, b) => b.benefice / b.cout - a.benefice / a.cout).map((p) => p.id);
+    expect([...meilleurPanier().ids].sort()).toEqual(classes.slice(0, 5).sort());
+  });
+
   it('calcule le coût d’opportunité comme la meilleure option abandonnée', () => {
     const co = coutOpportunite(['pain', 'lait', 'semoule', 'bonbons']);
     expect(co?.produit.id).toBe('cafe');

@@ -4,12 +4,44 @@ import {
   BUDGET_PREMIER_JOUR, PRODUITS, beneficeTotal, coutOpportunite, coutTotal, demandesNonServies, meilleurPanier, peutAjouter,
 } from '../economie/premierJour';
 import { chrono, suivre } from '../analyse';
-import { t, tListe } from '../i18n';
+import { langue, t, tListe } from '../i18n';
 import { barreMission } from '../ui/barre';
 import { FinDeMission, brancherFin, htmlFin, question } from '../ui/debrief';
-import { ammi } from '../ui/dessins';
+import { ammi, icone } from '../ui/dessins';
 import { afficher } from '../ui/dom';
 import { prix } from '../ui/format';
+
+/** Tableau « ton panier / le meilleur panier », produits classés par bénéfice rapporté à leur coût. */
+function comparaisonPaniers(choisis: readonly string[], meilleur: { ids: string[]; benefice: number }): string {
+  const gain = beneficeTotal(choisis);
+  const optimal = [...choisis].sort().join(',') === [...meilleur.ids].sort().join(',');
+  const pct = (x: number) => `${Math.round(x * 100).toLocaleString(langue() === 'en' ? 'en-GB' : 'fr-FR')} %`;
+  const marque = (dedans: boolean, couleur: string) =>
+    dedans ? `${icone('coche', couleur, 18)}<span class="sr">${t('intro1.compare.oui')}</span>` : `<span aria-hidden="true">·</span><span class="sr">${t('intro1.compare.non')}</span>`;
+  const lignes = [...PRODUITS]
+    .sort((a, b) => b.benefice / b.cout - a.benefice / a.cout)
+    .map((p) => {
+      const toi = choisis.includes(p.id);
+      const top = meilleur.ids.includes(p.id);
+      return `<tr class="${top ? 'dans-meilleur' : ''}${toi !== top ? ' different' : ''}">
+  <th scope="row">${t(`produit.${p.id}`)}<span class="petit montants">${prix(p.benefice)} / ${prix(p.cout)}</span></th>
+  <td>${pct(p.benefice / p.cout)}</td>
+  <td class="marque">${marque(toi, '#1E6FA8')}</td>
+  <td class="marque">${marque(top, '#2F8A63')}</td>
+</tr>`;
+    })
+    .join('');
+  return `<section class="carte comparaison" aria-labelledby="titre-comparaison">
+  <h2 id="titre-comparaison">${t('intro1.compare.titre')}</h2>
+  <p class="${optimal ? 'bravo' : 'ecart'}">${optimal ? t('intro1.compare.optimal') : t('intro1.compare.ecart', { ecart: prix(meilleur.benefice - gain) })}</p>
+  <table>
+    <thead><tr><th scope="col">${t('intro1.compare.produit')}</th><th scope="col">${t('intro1.compare.rendement')}</th><th scope="col">${t('intro1.compare.toi')}</th><th scope="col">${t('intro1.compare.meilleur')}</th></tr></thead>
+    <tbody>${lignes}</tbody>
+  </table>
+  <p class="petit">${t('intro1.compare.toi')} — ${t('intro1.compare.total', { cout: prix(coutTotal(choisis)), gain: prix(gain) })}<br>${t('intro1.compare.meilleur')} — ${t('intro1.compare.total', { cout: prix(coutTotal(meilleur.ids)), gain: prix(meilleur.benefice) })}</p>
+  <p class="petit astuce">${t('intro1.compare.astuce')}</p>
+</section>`;
+}
 
 /** Étoiles (grand public) : part du meilleur bénéfice possible. */
 export function etoilesIntro1(gain: number, meilleur: number): number {
@@ -113,6 +145,7 @@ ${barreMission(mission, t('barre.etape', { a: 2, b: 2 }))}
       <h2 id="titre-resultat" class="gros-chiffre">+${prix(gain)}</h2>
       <p>${t('intro1.resume', { n: choisis.length })}</p>
     </section>
+    ${comparaisonPaniers(choisis, meilleur)}
     ${
       manques.length
         ? `<section class="fil" aria-label="${t('intro1.fil')}"><p class="fil-titre"><span class="direct" aria-hidden="true"></span>${t('intro1.fil')}</p>
