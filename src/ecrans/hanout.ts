@@ -92,7 +92,7 @@ export function ecranHanout(racine: HTMLElement): void {
     <span class="effet">${echapper(effet)}</span>
     ${details}
   </div>
-  <button type="button" class="bouton acheter" data-acheter="${a.id}" data-prix="${p}"${etat.caisse + 1e-9 < p ? ' disabled' : ''}>
+  <button type="button" class="bouton acheter ph-no-rageclick" data-acheter="${a.id}" data-prix="${p}"${etat.caisse + 1e-9 < p ? ' disabled' : ''}>
     <span class="libelle">${echapper(t('hanout.acheter', { prix: prix(p) }))}</span>
   </button>
 </li>`;
@@ -153,7 +153,7 @@ export function ecranHanout(racine: HTMLElement): void {
       ${etat.total === 0 ? `<div class="bulle-ammi">${ammi(40)}<p>${t('hanout.ammi')}</p></div>` : ''}
       ${message ? `<p class="message-absence" role="status">${echapper(message)} <span class="petit">${t('hanout.absence.note')}</span></p>` : ''}
       <div class="zone-clic">
-        <button type="button" class="devanture-bouton" data-servir aria-label="${echapper(t('hanout.servir'))}" aria-describedby="aide-servir">${devanture(etat.niveaux)}</button>
+        <button type="button" class="devanture-bouton ph-no-rageclick" data-servir aria-label="${echapper(t('hanout.servir'))}" aria-describedby="aide-servir">${devanture(etat.niveaux)}</button>
         <span id="aide-servir" class="petit aide-servir">${echapper(aide)}</span>
       </div>
       <dl class="chiffres">

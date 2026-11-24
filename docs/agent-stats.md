@@ -4,7 +4,7 @@ L'agent lit les données de jeu dans PostHog. Il repère ce qui bloque, ennuie o
 
 - **Quand :** chaque lundi matin (tâche planifiée), ou à la demande (« analyse les stats des joueurs »).
 - **Où il lit :** le projet PostHog 363681 (région UE), par le connecteur PostHog.
-- **Où il écrit :** une issue GitHub dans `verty16yu/hanout`, titre « Analyse des joueurs — semaine du JJ/MM/AAAA », étiquette `analyse-joueurs`.
+- **Où il écrit :** une issue GitHub dans `verty16yu/hanout`, créée par l'API REST (`gh api repos/verty16yu/hanout/issues -f title=… -f body=… -f 'labels[]=analyse-joueurs'` ; `gh issue create` ne passe pas, car GraphQL est bloqué dans les sessions Claude). Titre : « Analyse des joueurs — semaine du JJ/MM/AAAA », étiquette `analyse-joueurs`.
 
 ## Règles
 
@@ -116,7 +116,7 @@ WHERE event IN ('$rageclick', '$exception') AND timestamp > now() - INTERVAL 7 D
 GROUP BY event, page ORDER BY n DESC LIMIT 20
 ```
 
-L'ancre de l'URL (`#/mission/…`, `#/hanout`) dit sur quel écran ça se passe. S'il y a des rageclicks, l'agent regarde 2 ou 3 enregistrements de ces sessions, quand ils existent.
+L'ancre de l'URL (`#/mission/…`, `#/hanout`) dit sur quel écran ça se passe. La devanture et les boutons d'achat de Mon hanout portent la classe `ph-no-rageclick` (on y tape vite exprès) : un rageclick sur `#/hanout` vient donc d'un autre élément. S'il y a des rageclicks, l'agent regarde 2 ou 3 enregistrements de ces sessions, quand ils existent.
 
 ## Seuils d'alerte
 
