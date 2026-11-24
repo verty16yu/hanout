@@ -25,15 +25,18 @@ La mesure est **anonyme** et **désactivée par défaut** : rien n'est chargé n
 | --- | --- | --- |
 | `ecran_vu` | `ecran` (`accueil`, `carnet`, `hanout`) | Quels écrans sont ouverts, où les joueurs s'arrêtent |
 | `mission_commencee` | `mission` | Quelles missions attirent |
-| `mission_terminee` | `mission`, `duree_s`, `etoiles` | Taux de réussite, temps passé par mission |
-| `mission_rejouee` | `mission`, `etoiles` | Les joueurs ont-ils envie de rejouer ? |
-| `quiz_reponse` | `mission`, `question`, `juste`, `tentative`, `reponse` | **Quelles notions de cours posent problème**, quelles mauvaises réponses reviennent |
-| `badge_gagne` | `mission`, `sans_erreur` | Part des étudiants qui maîtrisent la notion du premier coup |
-| `intro1_semaine` | `produits`, `gain`, `part_du_meilleur`, `panier_optimal`, `renonce_a` | Les joueurs comprennent-ils l'arbitrage et le coût d'opportunité ? |
-| `micro4_offre` | `client`, `essai`, `prix`, `disposition_a_payer`, `ecart_pct`, `issue` | Comment les joueurs marchandent, à quelle distance de la disposition à payer |
-| `micro4_bilan` | `surplus_producteur`, `surplus_consommateur`, `part_du_max`, `departs` | Le partage du surplus en fin de journée |
-| `stats3_classe` | `heure`, `juste` | Savent-ils repérer la classe modale ? |
-| `stats3_horaire` | `horaire`, `essai`, `servis`, `juste` | Savent-ils lire un histogramme pour décider ? |
+| `mission_terminee` | `mission`, `duree_s`, `etoiles`, `partie` | Taux de réussite, temps passé par mission (jusqu'à l'affichage du débrief) |
+| `mission_rejouee` | `mission`, `etoiles`, `partie` | Les joueurs ont-ils envie de rejouer ? (bouton « Rejouer » du débrief, dans les deux versions depuis le 24/11) |
+| `quiz_reponse` | `mission`, `question`, `juste`, `tentative`, `reponse`, `partie` | **Quelles notions de cours posent problème**, quelles mauvaises réponses reviennent |
+| `badge_gagne` | `mission`, `sans_erreur`, `partie` | Part des étudiants qui maîtrisent la notion du premier coup |
+| `hanout_annonce_clic` | `mission`, `nouveau_bonus`, `partie` | L'encart « Ta boutique gagne +25 % » de fin de mission fait-il découvrir Mon hanout ? |
+| `intro1_semaine` | `produits`, `gain`, `part_du_meilleur`, `panier_optimal`, `renonce_a`, `partie` | Les joueurs comprennent-ils l'arbitrage et le coût d'opportunité ? À la 2e partie, appliquent-ils le débrief ? |
+| `micro4_offre` | `client`, `essai`, `prix`, `disposition_a_payer`, `ecart_pct`, `issue`, `partie` | Comment les joueurs marchandent, à quelle distance de la disposition à payer |
+| `micro4_bilan` | `surplus_producteur`, `surplus_consommateur`, `part_du_max`, `departs`, `partie` | Le partage du surplus en fin de journée |
+| `stats3_classe` | `heure`, `juste`, `partie` | Savent-ils repérer la classe modale ? |
+| `stats3_horaire` | `horaire`, `essai`, `servis`, `juste`, `partie` | Savent-ils lire un histogramme pour décider ? |
+
+`partie` (depuis le 24/11) : 1 pour la première partie de la mission depuis l'ouverture du jeu, 2 après un « Rejouer », etc. Les événements plus anciens n'ont pas cette propriété : on les compte comme une première partie (`coalesce(toInt(properties.partie), 1)`).
 | `hanout_achat` | `amelioration`, `niveau`, `caisse_totale`, `missions_reussies` | Mon hanout : quelles améliorations sont achetées, et à quel moment de la progression |
 | `hanout_livret` | `action` (`depot`, `retrait`), `montant`, `livret` | Les joueurs épargnent-ils, ou dépensent-ils tout en améliorations ? |
 | `hanout_quitte` | `duree_s`, `clients`, `achats`, `revenu_par_s`, `gain_absence` | Temps passé dans Mon hanout, et s'il donne envie de revenir |

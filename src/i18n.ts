@@ -222,6 +222,13 @@ const fr: Dico = {
   'debrief.badgeTexte': 'Il est ajouté à ton carnet de missions.',
   'debrief.retour': 'Retour aux missions',
   'debrief.rejouer': 'Rejouer',
+  'debrief.rejouerEdu': 'Rejoue pour appliquer ce qu’Ammi vient d’expliquer, et compare ton résultat.',
+  'debrief.hanout.bonus': 'Ta boutique gagne +{pc} %',
+  'debrief.hanout.bonusTexte': 'Chaque mission réussie fait tourner Mon hanout plus vite : tous tes gains sont maintenant multipliés par {x}.',
+  'debrief.hanout.rappel': 'Ta boutique t’attend',
+  'debrief.hanout.rappelTexte': 'Elle a continué à servir des clients pendant ta mission.',
+  'debrief.hanout.rappelTexteVide': 'Sers tes clients et embauche le cousin au comptoir : elle tournera même pendant tes missions.',
+  'debrief.hanout.bouton': 'Encaisser',
   'debrief.etoiles': '{n} sur 3 étoiles',
   'debrief.etoilesTexte.3': 'Parfait, un vrai commerçant !',
   'debrief.etoilesTexte.2': 'Très bien ! Rejoue pour viser les 3 étoiles.',
@@ -298,6 +305,8 @@ const fr: Dico = {
   'carnet.hanout.sous': 'Caisse : {caisse} · {revenu} par seconde',
   'carnet.hanout.vide': 'Ouvre ta boutique et sers tes premiers clients',
   'carnet.hanout.bouton': 'Y aller',
+  'carnet.hanout.nouveau': 'Nouveau',
+  'carnet.hanout.attente': '+{montant} gagnés pendant ton absence',
 };
 
 const en: Dico = {
@@ -510,6 +519,13 @@ const en: Dico = {
   'debrief.badgeTexte': 'It has been added to your mission log.',
   'debrief.retour': 'Back to missions',
   'debrief.rejouer': 'Play again',
+  'debrief.rejouerEdu': 'Play again to put Ammi’s explanation into practice, and compare your result.',
+  'debrief.hanout.bonus': 'Your shop earns +{pc}%',
+  'debrief.hanout.bonusTexte': 'Every mission you complete makes My hanout run faster: all your earnings are now multiplied by {x}.',
+  'debrief.hanout.rappel': 'Your shop is waiting',
+  'debrief.hanout.rappelTexte': 'It kept serving customers while you were on your mission.',
+  'debrief.hanout.rappelTexteVide': 'Serve your customers and hire your cousin at the counter: it will keep running during your missions.',
+  'debrief.hanout.bouton': 'Collect',
   'debrief.etoiles': '{n} of 3 stars',
   'debrief.etoilesTexte.3': 'Perfect, a true shopkeeper!',
   'debrief.etoilesTexte.2': 'Great! Play again to go for 3 stars.',
@@ -586,6 +602,8 @@ const en: Dico = {
   'carnet.hanout.sous': 'Till: {caisse} · {revenu} per second',
   'carnet.hanout.vide': 'Open your shop and serve your first customers',
   'carnet.hanout.bouton': 'Go',
+  'carnet.hanout.nouveau': 'New',
+  'carnet.hanout.attente': '+{montant} earned while you were away',
 };
 
 const DICOS: Record<Langue, Dico> = { fr, en };

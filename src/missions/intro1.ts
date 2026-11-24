@@ -6,7 +6,7 @@ import {
 import { chrono, suivre } from '../analyse';
 import { langue, t, tListe } from '../i18n';
 import { barreMission } from '../ui/barre';
-import { FinDeMission, brancherFin, htmlFin, question } from '../ui/debrief';
+import { FinDeMission, brancherFin, htmlFin, partieEnCours, question } from '../ui/debrief';
 import { ammi, icone } from '../ui/dessins';
 import { afficher } from '../ui/dom';
 import { prix } from '../ui/format';
@@ -116,6 +116,7 @@ ${barreMission(mission, t('barre.etape', { a: 1, b: 2 }))}
       part_du_meilleur: Math.round((gain / meilleur.benefice) * 100),
       panier_optimal: [...choisis].sort().join(',') === [...meilleur.ids].sort().join(','),
       renonce_a: co ? co.produit.id : null,
+      partie: partieEnCours(mission.id),
     });
     const fin: FinDeMission = {
       missionId: mission.id,

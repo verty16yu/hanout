@@ -2,7 +2,7 @@ import { MISSIONS, MODULES, Mission, ModuleId, nomModule, titreMission } from '.
 import { etoiles, lireEtat, missionReussie, ville } from '../etat';
 import { t } from '../i18n';
 import { chargerBoutique, multiplicateur } from '../boutique';
-import { revenuParSeconde } from '../economie/clicker';
+import { gainsAbsence, revenuParSeconde } from '../economie/clicker';
 import { icone, vignetteAmelioration } from '../ui/dessins';
 import { prix } from '../ui/format';
 import { afficher, echapper } from '../ui/dom';
@@ -45,10 +45,17 @@ export function ecranCarnet(racine: HTMLElement): void {
     })
     .join('');
   const boutique = chargerBoutique();
-  const sousHanout = boutique.total > 0
-    ? t('carnet.hanout.sous', { caisse: prix(boutique.caisse), revenu: prix(revenuParSeconde(boutique, multiplicateur())) })
-    : t('carnet.hanout.vide');
-  const carteHanout = `<a class="carte-hanout" href="#/hanout">${vignetteAmelioration('etagere')}<span class="texte"><b>${t('carnet.hanout.titre')}</b><span class="petit">${echapper(sousHanout)}</span></span><span class="bouton-mini">${t('carnet.hanout.bouton')}</span></a>`;
+  const mult = multiplicateur();
+  const jamaisOuverte = boutique.total === 0;
+  // Ce que la boutique a gagné depuis la dernière visite (calcul seul : on encaisse dans Mon hanout).
+  const attente = jamaisOuverte ? 0 : gainsAbsence(boutique, Date.now(), mult).gain;
+  const sousHanout = jamaisOuverte
+    ? t('carnet.hanout.vide')
+    : attente >= 1
+      ? t('carnet.hanout.attente', { montant: prix(attente) })
+      : t('carnet.hanout.sous', { caisse: prix(boutique.caisse), revenu: prix(revenuParSeconde(boutique, mult)) });
+  const pastille = jamaisOuverte ? ` <span class="pastille-nouveau">${t('carnet.hanout.nouveau')}</span>` : '';
+  const carteHanout = `<a class="carte-hanout${jamaisOuverte ? ' a-decouvrir' : ''}" href="#/hanout">${vignetteAmelioration('etagere')}<span class="texte"><b>${t('carnet.hanout.titre')}${pastille}</b><span class="petit">${echapper(sousHanout)}</span></span><span class="bouton-mini">${t('carnet.hanout.bouton')}</span></a>`;
   afficher(
     racine,
     `<main class="ecran carnet">

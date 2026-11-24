@@ -42,10 +42,15 @@ export function sauverBoutique(etat: EtatBoutique): void {
   }
 }
 
+/** La mission compte-t-elle déjà pour le bonus de la boutique (badge ou au moins une étoile) ? */
+export function compteePourBonus(missionId: string): boolean {
+  const e = lireEtat();
+  return e.badges.includes(missionId) || (e.etoiles[missionId] ?? 0) > 0;
+}
+
 /** Missions réussies dans l'une ou l'autre version (badge ou au moins une étoile). */
 export function missionsReussies(): number {
-  const e = lireEtat();
-  return MISSIONS.filter((m) => e.badges.includes(m.id) || (e.etoiles[m.id] ?? 0) > 0).length;
+  return MISSIONS.filter((m) => compteePourBonus(m.id)).length;
 }
 
 export function multiplicateur(): number {

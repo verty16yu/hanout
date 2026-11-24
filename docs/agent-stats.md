@@ -53,11 +53,12 @@ SELECT properties.mission AS mission, properties.question AS question,
              / greatest(countIf(toInt(properties.tentative) = 1), 1)) AS pct_juste_1er_essai,
        topK(1)(if(properties.juste = false, properties.reponse, NULL)) AS erreur_frequente
 FROM events
-WHERE event = 'quiz_reponse' AND timestamp > now() - INTERVAL 7 DAY AND person_id NOT IN COHORT 344184
+WHERE event = 'quiz_reponse' AND coalesce(toInt(properties.partie), 1) = 1
+  AND timestamp > now() - INTERVAL 7 DAY AND person_id NOT IN COHORT 344184
 GROUP BY mission, question ORDER BY pct_juste_1er_essai ASC
 ```
 
-L'erreur la plus fréquente dit quelle idée fausse corriger dans le débrief de la mission.
+L'erreur la plus fréquente dit quelle idée fausse corriger dans le débrief de la mission. Seule la première partie compte : après un « Rejouer », le joueur a déjà vu les bonnes réponses.
 
 ### 4. Décisions dans les missions
 
@@ -68,12 +69,13 @@ SELECT properties.client AS client, count() AS premieres_offres,
        round(quantile(0.5)(toFloat(properties.ecart_pct))) AS ecart_median_pct,
        round(100.0 * countIf(properties.issue = 'vente') / count()) AS pct_vente_1er_essai
 FROM events
-WHERE event = 'micro4_offre' AND toInt(properties.essai) = 1 AND timestamp > now() - INTERVAL 7 DAY
+WHERE event = 'micro4_offre' AND toInt(properties.essai) = 1 AND coalesce(toInt(properties.partie), 1) = 1
+  AND timestamp > now() - INTERVAL 7 DAY
   AND person_id NOT IN COHORT 344184
 GROUP BY client
 ```
 
-- **Intro 1 :** part de `intro1_semaine` avec `panier_optimal = true`, et la médiane de `part_du_meilleur`.
+- **Intro 1 :** part de `intro1_semaine` avec `panier_optimal = true`, et la médiane de `part_du_meilleur`, **séparément pour la 1re partie et les suivantes** (`coalesce(toInt(properties.partie), 1) = 1` ou `> 1`). Le débrief montre le meilleur panier après le choix : c'est à la 2e partie qu'on voit s'il a été compris.
 - **Stats 3 :** part de `stats3_classe` justes, et nombre moyen d'essais dans `stats3_horaire`.
 
 ### 5. Mon hanout
@@ -89,7 +91,7 @@ FROM events
 WHERE timestamp > now() - INTERVAL 7 DAY AND person_id NOT IN COHORT 344184
 ```
 
-Ensuite, les achats par amélioration : `hanout_achat`, regroupé par `amelioration`.
+Ensuite, les achats par amélioration : `hanout_achat`, regroupé par `amelioration`. Et l'encart de fin de mission : nombre de joueurs avec `hanout_annonce_clic`, rapporté aux joueurs qui ont réussi une mission (`badge_gagne` ou `mission_terminee` en version grand public).
 
 ### 6. Fidélité
 

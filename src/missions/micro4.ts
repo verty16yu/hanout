@@ -6,7 +6,7 @@ import { lireEtat } from '../etat';
 import { chrono, suivre } from '../analyse';
 import { t, tListe } from '../i18n';
 import { barreMission } from '../ui/barre';
-import { FinDeMission, brancherFin, htmlFin, question } from '../ui/debrief';
+import { FinDeMission, brancherFin, htmlFin, partieEnCours, question } from '../ui/debrief';
 import { clientAuComptoir, etageres, icone } from '../ui/dessins';
 import { afficher, echapper } from '../ui/dom';
 import { prix } from '../ui/format';
@@ -43,6 +43,7 @@ export function missionMicro4(racine: HTMLElement): void {
         disposition_a_payer: client.dispositionAPayer,
         ecart_pct: Math.round(((offre - client.dispositionAPayer) / client.dispositionAPayer) * 100),
         issue: r.issue,
+        partie: partieEnCours(mission.id),
       });
       patience = r.patienceRestante;
       visage = r.visage;
@@ -125,6 +126,7 @@ ${barreMission(mission, t('barre.client', { a: index + 1, b: CLIENTS_COMPTOIR.le
       surplus_consommateur: Math.round(b.consommateur * 100) / 100,
       part_du_max: Math.round((b.producteur / maxProd) * 100),
       departs: ventes.filter((v) => v.prix === null).length,
+      partie: partieEnCours(mission.id),
     });
     const fin: FinDeMission = {
       missionId: mission.id,

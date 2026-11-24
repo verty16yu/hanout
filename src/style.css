@@ -289,6 +289,12 @@ h1:focus, h2:focus { outline: none; }
 .carte-hanout .texte { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .carte-hanout b { font-family: var(--titre); font-size: 18px; color: var(--ocre-fonce); }
 .bouton-mini { padding: 8px 14px; border-radius: 12px; background: var(--ocre); color: #fff; font-weight: 800; white-space: nowrap; }
+.carte-hanout.a-decouvrir { animation: hanout-appel 2.4s ease-in-out 3; }
+.pastille-nouveau { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--safran); color: var(--nuit); font-family: var(--texte); font-size: 12px; font-weight: 800; vertical-align: middle; }
+.carte-hanout.annonce-hanout { margin: 0; animation: apparait .5s ease-out; }
+.place-annonce:empty { display: none; }
+.rejouer-texte { margin: 4px 0 -4px; color: var(--gris); }
+@keyframes hanout-appel { 0%, 100% { box-shadow: 0 0 0 0 rgba(200, 121, 58, .45); } 50% { box-shadow: 0 0 0 8px rgba(200, 121, 58, 0); } }
 .hanout-corps { display: flex; flex-direction: column; gap: 14px; padding: 12px 16px 32px; }
 .hanout-boutique { display: flex; flex-direction: column; gap: 12px; }
 .hanout-boutique > .bulle-ammi { margin: 0; }

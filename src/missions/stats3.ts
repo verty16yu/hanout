@@ -7,7 +7,7 @@ import { lireEtat } from '../etat';
 import { chrono, suivre } from '../analyse';
 import { t, tListe } from '../i18n';
 import { barreMission } from '../ui/barre';
-import { FinDeMission, brancherFin, htmlFin, question } from '../ui/debrief';
+import { FinDeMission, brancherFin, htmlFin, partieEnCours, question } from '../ui/debrief';
 import { ammi } from '../ui/dessins';
 import { afficher } from '../ui/dom';
 
@@ -81,7 +81,7 @@ ${barreMission(mission, t('barre.etape', { a: etape, b: 2 }))}
     racine.querySelectorAll<HTMLButtonElement>('.barre-h').forEach((b) =>
       b.addEventListener('click', () => {
         classeChoisie = Number(b.dataset.h);
-        suivre('stats3_classe', { heure: classeChoisie, juste: classeChoisie === modale.debut });
+        suivre('stats3_classe', { heure: classeChoisie, juste: classeChoisie === modale.debut, partie: partieEnCours(mission.id) });
         rendre(true);
       }),
     );
@@ -90,7 +90,7 @@ ${barreMission(mission, t('barre.etape', { a: etape, b: 2 }))}
         const choix = HORAIRES.find((h) => h.id === b.dataset.horaire) ?? null;
         if (choix && choix.id !== horaire?.id && !finAffichee) {
           essais += 1;
-          suivre('stats3_horaire', { horaire: choix.id, essai: essais, servis: clientsServis(choix), juste: choix.id === meilleur.id });
+          suivre('stats3_horaire', { horaire: choix.id, essai: essais, servis: clientsServis(choix), juste: choix.id === meilleur.id, partie: partieEnCours(mission.id) });
         }
         horaire = choix;
         rendre(true);

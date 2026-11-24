@@ -1,12 +1,38 @@
 // Fin de mission.
-// Version éducative : débrief d'Ammi Rabah (notions, question de réflexion, quiz, badge).
+// Version éducative : débrief d'Ammi Rabah (notions, question de réflexion, quiz, badge), rejouer.
 // Version grand public : conseil d'Ammi Rabah, étoiles selon la performance, rejouer.
+// Dans les deux versions, une mission réussie annonce Mon hanout (son bonus de +25 %).
 
 import { suivre } from '../analyse';
+import { chargerBoutique, compteePourBonus, missionsReussies, multiplicateur } from '../boutique';
+import { BONUS_PAR_MISSION, multiplicateurMissions, revenuParSeconde } from '../economie/clicker';
 import { enregistrerEtoiles, gagnerBadge, lireEtat } from '../etat';
-import { t, tListe } from '../i18n';
-import { ammi, icone } from './dessins';
+import { langue, t, tListe } from '../i18n';
+import { ammi, icone, vignetteAmelioration } from './dessins';
 import { echapper } from './dom';
+
+/** Parties terminées par mission depuis l'ouverture du jeu (pour distinguer la 1re partie des suivantes). */
+const partiesTerminees = new Map<string, number>();
+
+/** Numéro de la partie en cours pour cette mission : 1 pour la première depuis l'ouverture du jeu. */
+export function partieEnCours(missionId: string): number {
+  return (partiesTerminees.get(missionId) ?? 0) + 1;
+}
+
+/**
+ * Encart qui envoie vers Mon hanout à la fin d'une mission réussie.
+ * Nouveau bonus : la mission vient de compter pour la première fois (+25 % sur les gains de la boutique).
+ */
+function annonceHanout(nouveauBonus: boolean, mult: number): string {
+  const x = mult.toLocaleString(langue() === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 2 });
+  const titre = nouveauBonus ? t('debrief.hanout.bonus', { pc: Math.round(BONUS_PAR_MISSION * 100) }) : t('debrief.hanout.rappel');
+  // Sans amélioration automatique (cousin, frigo…), la boutique ne gagne rien pendant l'absence.
+  const tourneSeule = revenuParSeconde(chargerBoutique()) > 0;
+  const texte = nouveauBonus
+    ? t('debrief.hanout.bonusTexte', { x })
+    : t(tourneSeule ? 'debrief.hanout.rappelTexte' : 'debrief.hanout.rappelTexteVide');
+  return `<a class="carte-hanout annonce-hanout" href="#/hanout" data-bonus="${nouveauBonus}">${vignetteAmelioration('etagere')}<span class="texte"><b>${titre}</b><span class="petit">${texte}</span></span><span class="bouton-mini">${t('debrief.hanout.bouton')}</span></a>`;
+}
 
 export interface QuestionCours {
   question: string;
@@ -51,13 +77,21 @@ function htmlEdu(d: FinDeMission): string {
 <h3 class="titre-quiz">${t('debrief.quiz')}</h3>
 ${questions}
 <div class="badge-gagne" hidden role="status">${icone('etoile', '#F2B632', 36)}<div><p class="gros">${t('debrief.badge')}</p><p>${t('debrief.badgeTexte')}</p></div></div>
-<a class="bouton principal" href="#/carnet">${t('debrief.retour')}</a>
+<div class="place-annonce"></div>
+<p class="petit rejouer-texte">${t('debrief.rejouerEdu')}</p>
+<div class="boutons-fin">
+  <button type="button" class="bouton" data-action="rejouer">${t('debrief.rejouer')}</button>
+  <a class="bouton principal" href="#/carnet">${t('debrief.retour')}</a>
+</div>
 </section>`;
 }
 
 function htmlPublic(d: FinDeMission): string {
   const n = Math.max(1, Math.min(3, d.etoiles));
   const etoilesHtml = [1, 2, 3].map((i) => icone('etoile', i <= n ? '#F2B632' : '#E2D7BF', 40)).join('');
+  // Les étoiles sont enregistrées juste après l'affichage (brancherFin) : on calcule le bonus à venir.
+  const nouveauBonus = !compteePourBonus(d.missionId);
+  const mult = multiplicateurMissions(missionsReussies() + (nouveauBonus ? 1 : 0));
   return `<section class="debrief" aria-labelledby="titre-debrief">
 <div class="score" role="status">
   <p class="etoiles" aria-hidden="true">${etoilesHtml}</p>
@@ -65,6 +99,7 @@ function htmlPublic(d: FinDeMission): string {
   <p>${t(`debrief.etoilesTexte.${n}`)}</p>
 </div>
 <div class="bulle-ammi">${ammi(44)}<div><p class="qui">${t('debrief.quiPublic')}</p><p>${d.conseil}</p></div></div>
+${annonceHanout(nouveauBonus, mult)}
 <div class="boutons-fin">
   <button type="button" class="bouton" data-action="rejouer">${t('debrief.rejouer')}</button>
   <a class="bouton principal" href="#/carnet">${t('debrief.retour')}</a>
@@ -77,21 +112,29 @@ export function htmlFin(d: FinDeMission): string {
 }
 
 /**
- * Branche la fin de mission (quiz ou bouton rejouer) après l'avoir insérée dans la page.
+ * Branche la fin de mission (quiz, annonce de Mon hanout, bouton rejouer) après l'avoir insérée dans la page.
  * En grand public, les étoiles sont enregistrées dès l'affichage.
  */
 export function brancherFin(racine: HTMLElement, d: FinDeMission, rejouer: () => void): void {
   const zone = racine.querySelector<HTMLElement>('.debrief');
   if (!zone) return;
   const n = Math.max(1, Math.min(3, d.etoiles));
-  suivre('mission_terminee', { mission: d.missionId, duree_s: d.duree ?? null, etoiles: lireEtat().mode === 'public' ? n : null });
-  if (lireEtat().mode === 'public') {
+  const publicMode = lireEtat().mode === 'public';
+  const partie = partieEnCours(d.missionId);
+  partiesTerminees.set(d.missionId, partie);
+  suivre('mission_terminee', { mission: d.missionId, duree_s: d.duree ?? null, etoiles: publicMode ? n : null, partie });
+  zone.addEventListener('click', (e) => {
+    const lien = (e.target as HTMLElement).closest<HTMLElement>('.annonce-hanout');
+    if (lien) suivre('hanout_annonce_clic', { mission: d.missionId, nouveau_bonus: lien.dataset.bonus === 'true', partie });
+  });
+  zone.querySelector('[data-action="rejouer"]')?.addEventListener('click', () => {
+    suivre('mission_rejouee', { mission: d.missionId, etoiles: publicMode ? n : null, partie });
+    rejouer();
+  });
+  if (publicMode) {
     enregistrerEtoiles(d.missionId, n);
-    zone.querySelector('[data-action="rejouer"]')?.addEventListener('click', () => {
-      suivre('mission_rejouee', { mission: d.missionId, etoiles: n });
-      rejouer();
-    });
   } else {
+    let badgeAffiche = false;
     const justes = new Set<number>();
     const tentatives = d.questions.map(() => 0);
     zone.querySelectorAll<HTMLButtonElement>('.choix').forEach((b) => {
@@ -102,7 +145,7 @@ export function brancherFin(racine: HTMLElement, d: FinDeMission, rejouer: () =>
         const bloc = zone.querySelector<HTMLElement>(`[data-question="${qi}"]`)!;
         const retour = bloc.querySelector<HTMLElement>('.quiz-retour')!;
         tentatives[qi] += 1;
-        suivre('quiz_reponse', { mission: d.missionId, question: qi + 1, juste: ci === q.bonne, tentative: tentatives[qi], reponse: q.choix[ci] });
+        suivre('quiz_reponse', { mission: d.missionId, question: qi + 1, juste: ci === q.bonne, tentative: tentatives[qi], reponse: q.choix[ci], partie });
         if (ci === q.bonne) {
           b.classList.add('juste');
           bloc.querySelectorAll<HTMLButtonElement>('.choix').forEach((x) => (x.disabled = true));
@@ -115,11 +158,15 @@ export function brancherFin(racine: HTMLElement, d: FinDeMission, rejouer: () =>
           retour.textContent = t('debrief.rate');
           retour.className = 'quiz-retour ko';
         }
-        if (justes.size === d.questions.length) {
+        if (justes.size === d.questions.length && !badgeAffiche) {
+          badgeAffiche = true;
+          const nouveauBonus = !compteePourBonus(d.missionId);
           gagnerBadge(d.missionId);
-          suivre('badge_gagne', { mission: d.missionId, sans_erreur: tentatives.every((x) => x === 1) });
+          suivre('badge_gagne', { mission: d.missionId, sans_erreur: tentatives.every((x) => x === 1), partie });
           const badge = zone.querySelector<HTMLElement>('.badge-gagne')!;
           badge.hidden = false;
+          const place = zone.querySelector<HTMLElement>('.place-annonce');
+          if (place) place.innerHTML = annonceHanout(nouveauBonus, multiplicateur());
           badge.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       });
